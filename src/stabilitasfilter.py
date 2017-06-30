@@ -83,14 +83,23 @@ class StabilitasFilter(object):
                                 self.cities_df["latitude"],
                                 self.cities_df["longitude"]
                             )
+        self.city_lookup = {}
+        for city in self.cities_df["name"].unique():
+            lat_long = self.cities_df[
+                        self.cities_df["name"] == city
+                        ]["lat_long"].values[0]
+            self.city_lookup[city] = {"location":lat_long}
 
     def fit(
         self,
         data_filename,
+        start_datetime,
+        end_datetime,
         resample_size=3,
         window_size="1w",
         anomaly_threshold=1,
-        precalculated=False
+        precalculated=False,
+        quadratic=True
     ):
         """
         Fit model to reports included in file. This method loads the data,
@@ -98,23 +107,35 @@ class StabilitasFilter(object):
 
         Inputs:
             filename - str, path to report data
+            start_date - str, format "YYYY-MM-DD [HH:MM:SS] <-optional"
+            end_date - str, format "YYYY-MM-DD [HH:MM:SS] <-optional"
             resample_size - int, minutes for timeseries resampling
-            window_size - str, length of window for rolling mean and
-                standard deviation
+                Default: 3 minutes
+            window_size - str, length of window for rolling mean and standard
+                deviation
                 Valid inputs: "12h", "1d", "1w", "4w"
+                Default: 1 week
             anomaly_threshold - int, number of standard deviations above
                 the mean a resample bucket needs to be in order to pass
                 through the filter to the next layer
+                Default: 1 standard deviation
             precalculated - bool, indicate whether city labels have been
                 precalculated or not
+                Default: False
+            quadratic - bool, indicate whether to use engineered severity
+                score or reporting volumes
+                Default: True
         Output: fit model ready to return anomaly information
         """
         self.resample_size = resample_size
         self.window = self.window_to_minutes_converter[window_size] / resample_size
         self.threshold = anomaly_threshold
+        self.start = pd.to_datetime(start_datetime)
+        self.end = pd.to_datetime(end_datetime)
+        self.date_range = pd.date_range(self.start, self.end)
 
         self._load_data(data_filename, precalculated)
-        self._build_cities_timeseries()
+        self._build_cities_timeseries(quadratic)
         self._find_anomalies()
         self._anomalies_by_day()
 
@@ -188,21 +209,25 @@ class StabilitasFilter(object):
 
         self.reports_df.dropna(axis=0, how="any", inplace=True)
         self.reports_df = self.reports_df[target_columns]
+        self.reports_df["start_ts"] = pd.to_datetime(
+                                            self.reports_df["start_ts"],
+                                            unit="s",
+                                            errors="ignore"
+                                        )
+        self.reports_df = self.reports_df[
+                            self.reports_df["start_ts"] > self.start
+                        ]
+        self.reports_df = self.reports_df[
+                            self.reports_df["start_ts"] < self.end
+                        ]
+
         self.reports_df["lat_long"] = zip(
             self.reports_df["lat"],
             self.reports_df["lon"]
         )
-        self.reports_df["start_ts"] = pd.to_datetime(
-                                        self.reports_df["start_ts"],
-                                        unit="s",
-                                        errors="ignore"
-                                    )
         self.reports_df["severity_quadratic"] =\
             self.reports_df["severity"].map(severity_score_quadratic)
 
-        self.start = min(self.reports_df["start_ts"])
-        self.end = max(self.reports_df["start_ts"])
-        self.date_range = pd.date_range(self.start, self.end)
 
     def _map_reports_to_cities(self, precalculated=False):
         """
@@ -229,6 +254,12 @@ class StabilitasFilter(object):
                 for city in self.cities_df["lat_long"]:
                     distances.append(haversine(report, city))
                 city_label_indices.append(np.argmin(distances))
+            indices_df = pd.DataFrame(city_label_indices)
+            indices_df.to_csv(
+                "data/city_label_indices.csv",
+                header=False,
+                mode="a"
+            )
 
         city_labels = []
         for index in city_label_indices:
@@ -236,37 +267,47 @@ class StabilitasFilter(object):
 
         self.reports_df["city"] = city_labels
 
-    def _build_cities_timeseries(self):
+    def _build_cities_timeseries(self, quadratic):
         """
         Method to build resampled timeseries for each city in the dataset.
         """
         print "Building city timeseries..."
-        self.cities_timeseries = {}
+        # self.cities_timeseries = {}
         for city in self.reports_df["city"].unique():
             city_df = self.reports_df[self.reports_df["city"] == city]
 
-            # Use engineered quadratic severity score
-            ts = pd.Series(
-                city_df["severity_quadratic"].values,
-                index=city_df["start_ts"]
-            )
-            self.cities_timeseries[city] = np.log(
-                ts.resample("{}T".format(self.resample_size)
-                ).sum())
+            if quadratic:
+                # Use engineered quadratic severity score
+                ts = pd.Series(
+                    city_df["severity_quadratic"].values,
+                    index=city_df["start_ts"]
+                )
+                # self.city_lookup[city]["timeseries"] = np.log(
+                #     ts.resample("{}T".format(self.resample_size)
+                #     ).sum())
 
-            # Use simple volume of reporting
-            # ts = pd.Series(
-            #     np.ones(len(city_df)),
-            #     index=city_df["start_ts"]
-            # )
-            # self.cities_timeseries[city] = ts.resample("{}T").sum()
+                # Try with mean instead of sum
+                self.city_lookup[city]["timeseries"] = np.log(
+                    ts.resample("{}T".format(self.resample_size)
+                    ).mean())
+            else:
+            # Use only volume of reporting
+                ts = pd.Series(
+                    np.ones(len(city_df)),
+                    index=city_df["start_ts"]
+                )
+                self.city_lookup[city]["timeseries"] = ts.resample("{}T"
+                                        .format(self.resample_size)).sum()
 
 
     def _find_anomalies(self):
+        """
+        Method to find anomalies in the built timeseries.
+        """
         print "Detecting anomalies..."
-        self.cities_anomalies = {}
+        # self.cities_anomalies = {}
         for city in self.reports_df["city"].unique():
-            series = self.cities_timeseries[city]
+            series = self.city_lookup[city]["timeseries"]
 
             rolling_std = series.rolling(
                 window=self.window,
@@ -279,22 +320,65 @@ class StabilitasFilter(object):
                 center=False
             ).mean()
 
-            threshold = rolling_mean + (self.threshold * rolling_std)
-            anomalies = [point[0] if point[0] > point[1] else None for point in izip(series, threshold)]
+            threshold = rolling_mean + self.threshold * rolling_std
+            # print threshold
+            # break
 
-            self.cities_anomalies[city] = pd.Series(
-                                            anomalies,
-                                            index=series.index
-                                        )
+            anomalies = []
+            for sample, threshold in izip(series, threshold):
+                if sample > threshold:
+                    anomalies.append(sample)
+                else:
+                    anomalies.append(None)
+
+            # self.cities_anomalies[city] = pd.Series(
+            #                                 anomalies,
+            #                                 index=series.index
+            #                             )
+            self.city_lookup[city]["anomalies"] = pd.Series(
+                                                        anomalies,
+                                                        index=series.index
+                                                    )
 
     def _anomalies_by_day(self):
+        """
+        Method to convert identified anomalies into date:[anomalous_cities]
+        pairs.
+        """
         print "Grouping anomalous cities by day..."
         self.date_dictionary = defaultdict(list)
-        for city, series in self.cities_anomalies.iteritems():
-            daily_anomalies = series.resample("D").sum()[self.start:self.end]
+        for city in self.city_lookup.keys():
+            try:
+                series = self.city_lookup[city]["anomalies"]
+            except:
+                continue
+            daily_anomalies = series.resample("d").sum()[self.start:self.end]
+            # print daily_anomalies
             for day in daily_anomalies.index:
+                # print daily_anomalies[day]
                 if daily_anomalies[day] > 0:
                     self.date_dictionary[day.date()].append(city)
+
+    def get_anomaly_cities(self, date):
+        """
+        Method to return all the anomalous cities on a given day.
+        Input: date - str, format "YYYY-MM-DD"
+        Outpus: list of cities
+        """
+        query = pd.to_datetime(date).date()
+        return self.date_dictionary[query]
+
+    def get_anomaly_locations(self, date):
+        """
+        Method to return location data for anomalous cities on the given date.
+        Input: date - str, format "YYYY-MM-DD"
+        Output: tuple of two lists ([latitudes], [longitudes])
+        """
+        cities = self.get_anomaly_cities(date)
+        lats = [self.city_lookup[city]["location"][0] for city in cities]
+        longs = [self.city_lookup[city]["location"][1] for city in cities]
+
+        return (lats, longs)
 
 
 

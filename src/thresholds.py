@@ -15,19 +15,26 @@ def main():
     data_filename = "data/reports_12DEC16-26DEC16.tsv"
     filter_layer.fit(
         data_filename,
+        start_datetime="2016-12-12",
+        end_datetime="2016-12-26",
         resample_size=3,
         window_size="1w",
         anomaly_threshold=1,
-        precalculated=True
+        precalculated=True,
+        quadratic=True
     )
-
-
-    filter_layer.test()
     finish = time.time()
     print "Finished at {0} in {1} seconds.".format(
                                     datetime.now().time(),
                                     finish-start
                                 )
+
+    lats, longs = filter_layer.get_anomaly_locations("2016-12-14")
+    print "Number of elevated cities: ", len(lats)
+    plt.scatter(longs, lats)
+    plt.show()
+
+    # filter_layer.test()
     # plt.scatter(
     #     filter_layer.cities_anomalies["Berlin"].index,
     #     filter_layer.cities_anomalies["Berlin"].values
@@ -36,7 +43,6 @@ def main():
 
     # anomaly_counts = [len(cities) for cities in filter_layer.date_dictionary.values()]
     # plt.bar(filter_layer.date_dictionary.keys(), anomaly_counts, width=1)
-    # plt.show()
 
 
 if __name__ == '__main__':
