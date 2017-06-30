@@ -10,7 +10,8 @@ def main():
         data_filename,
         resample_size=3,
         window_size="1w",
-        anomaly_threshold=1
+        anomaly_threshold=1,
+        precalculated=True
     )
 
 

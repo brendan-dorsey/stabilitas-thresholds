@@ -84,9 +84,10 @@ class StabilitasFilter(object):
     def fit(
         self,
         data_filename,
-        resample_size,
-        window_size,
-        anomaly_threshold
+        resample_size=3,
+        window_size="1w",
+        anomaly_threshold=1,
+        precalculated=False
     ):
         """
         Fit model to reports included in file. This method loads the data,
@@ -103,9 +104,12 @@ class StabilitasFilter(object):
                 through the filter to the next layer
         Output: fit model ready to return anomaly information
         """
-        self._load_data(data_filename)
+        self.resample_size = resample_size
+        self.window = self.window_to_minutes_converter[window_size]
+        self.threshold = anomaly_threshold
+        self._load_data(data_filename, precalculated)
 
-    def _load_data(self, data_filename):
+    def _load_data(self, data_filename, precalculated):
         """
         Load data from the given file.
 
@@ -137,6 +141,7 @@ class StabilitasFilter(object):
             names=column_names
         )
         self._preprocess_data()
+        self._map_reports_to_cities(precalculated)
 
 
     def _preprocess_data(self):
@@ -147,23 +152,6 @@ class StabilitasFilter(object):
         Input: self with raw dataframe initialized
         Output: self with cleaned and engineered dataframe
         """
-        target_columns = [
-            "lat",
-            "lon",
-            "id",
-            "title",
-            "start_ts",
-            "report_type",
-            "severity"
-        ]
-        self.reports_df.dropna(axis=0, how="any", inplace=True)
-        self.reports_df = self.reports_df[target_columns]
-        self.reports_df["start_ts"] = pd.to_datetime(
-                                        self.reports_df["start_ts"],
-                                        unit="s",
-                                        errors="ignore"
-                                    )
-
         def severity_score_quadratic(severity_rating):
             if severity_rating == "low":
                 return 1
@@ -177,13 +165,57 @@ class StabilitasFilter(object):
                 return 25
             else:
                 return 4
+
+        target_columns = [
+            "lat",
+            "lon",
+            "id",
+            "title",
+            "start_ts",
+            "report_type",
+            "severity"
+        ]
+
+        self.reports_df.dropna(axis=0, how="any", inplace=True)
+        self.reports_df = self.reports_df[target_columns]
+        self.reports_df["lat_long"] = zip(
+            self.reports_df["lat"],
+            self.reports_df["lon"]
+        )
+        self.reports_df["start_ts"] = pd.to_datetime(
+                                        self.reports_df["start_ts"],
+                                        unit="s",
+                                        errors="ignore"
+                                    )
         self.reports_df["severity_quadratic"] =\
             self.reports_df["severity"].map(severity_score_quadratic)
+
+    def _map_reports_to_cities(self, precalculated=False):
+        if precalculated:
+            precalculated_filename = "data/city_label_indices.csv"
+            city_label_indices = pd.read_csv(
+                precalculated_filename,
+                header=None
+            )
+            city_label_indices = city_label_indices[1].values
+        else:
+            city_label_indices = []
+            for report in self.reports_df["lat_long"]:
+                distances = []
+                for city in self.cities_df["lat_long"]:
+                    distances.append(haversine(report, city))
+                city_label_indices.append(np.argmin(distances))
+
+        city_labels = []
+        for index in city_label_indices:
+            city_labels.append(self.cities_df.ix[index, "name"])
+
+        self.reports_df["city"] = city_labels
 
     def _build_cities(self):
         pass
 
-    def find_anomalies(self, city):
+    def _find_anomalies(self, city):
         pass
 
     def test(self):
