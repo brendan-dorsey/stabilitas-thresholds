@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from haversine import haversine
 from itertools import izip
+from collections import defaultdict
 
 def main():
     print "Building Filter Model..."
@@ -32,6 +33,7 @@ class StabilitasFilter(object):
         Input: filename
         Output: Self with stored city data.
         """
+        print "Loading cities..."
         if cleaned:
             self.cities_df = pd.read_csv(cities_filename)
         else:
@@ -114,6 +116,7 @@ class StabilitasFilter(object):
         self._load_data(data_filename, precalculated)
         self._build_cities_timeseries()
         self._find_anomalies()
+        self._anomalies_by_day()
 
     def _load_data(self, data_filename, precalculated):
         """
@@ -122,6 +125,7 @@ class StabilitasFilter(object):
         Input: filename
         Output: Self with stored and processed report data
         """
+        print "Loading data..."
         column_names = [
             "lat",
             "lon",
@@ -157,6 +161,7 @@ class StabilitasFilter(object):
         Input: self with raw dataframe initialized
         Output: self with cleaned and engineered dataframe
         """
+        print "Processing data..."
         def severity_score_quadratic(severity_rating):
             if severity_rating == "low":
                 return 1
@@ -195,6 +200,10 @@ class StabilitasFilter(object):
         self.reports_df["severity_quadratic"] =\
             self.reports_df["severity"].map(severity_score_quadratic)
 
+        self.start = min(self.reports_df["start_ts"])
+        self.end = max(self.reports_df["start_ts"])
+        self.date_range = pd.date_range(self.start, self.end)
+
     def _map_reports_to_cities(self, precalculated=False):
         """
         Method that calculates the haversine distance from each report to each
@@ -205,6 +214,7 @@ class StabilitasFilter(object):
         values.
         Output: self with labeled reports dataframe
         """
+        print "Labeling reports with cities..."
         if precalculated:
             precalculated_filename = "data/city_label_indices.csv"
             city_label_indices = pd.read_csv(
@@ -230,6 +240,7 @@ class StabilitasFilter(object):
         """
         Method to build resampled timeseries for each city in the dataset.
         """
+        print "Building city timeseries..."
         self.cities_timeseries = {}
         for city in self.reports_df["city"].unique():
             city_df = self.reports_df[self.reports_df["city"] == city]
@@ -252,6 +263,7 @@ class StabilitasFilter(object):
 
 
     def _find_anomalies(self):
+        print "Detecting anomalies..."
         self.cities_anomalies = {}
         for city in self.reports_df["city"].unique():
             series = self.cities_timeseries[city]
@@ -275,12 +287,24 @@ class StabilitasFilter(object):
                                             index=series.index
                                         )
 
+    def _anomalies_by_day(self):
+        print "Grouping anomalous cities by day..."
+        self.date_dictionary = defaultdict(list)
+        for city, series in self.cities_anomalies.iteritems():
+            daily_anomalies = series.resample("D").sum()[self.start:self.end]
+            for day in daily_anomalies.index:
+                if daily_anomalies[day] > 0:
+                    self.date_dictionary[day.date()].append(city)
+
+
+
     def test(self):
         print "Cities Loaded, shape: ", self.cities_df.shape
         print "Reports Loaded, shape: ", self.reports_df.shape
+        print "Reports Mapped, cities: ", len(self.reports_df["city"].unique())
         print ""
-        print self.reports_df.info()
-        print "Skeleton working"
+        # print self.reports_df.info()
+        print "Filter Functioning"
 
 if __name__ == '__main__':
     main()
