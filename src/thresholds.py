@@ -19,8 +19,8 @@ def main():
 
     filter_layer.test()
     plt.scatter(
-        filter_layer.cities_timeseries["Berlin"].index,
-        filter_layer.cities_timeseries["Berlin"].values
+        filter_layer.cities_anomalies["Berlin"].index,
+        filter_layer.cities_anomalies["Berlin"].values
     )
     plt.xlim("2016-12-12", "2016-12-27")
     plt.show()

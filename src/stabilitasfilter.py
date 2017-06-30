@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from haversine import haversine
+from itertools import izip
 
 def main():
     print "Building Filter Model..."
@@ -107,11 +108,12 @@ class StabilitasFilter(object):
         Output: fit model ready to return anomaly information
         """
         self.resample_size = resample_size
-        self.window = self.window_to_minutes_converter[window_size]
+        self.window = self.window_to_minutes_converter[window_size] / resample_size
         self.threshold = anomaly_threshold
 
         self._load_data(data_filename, precalculated)
         self._build_cities_timeseries()
+        self._find_anomalies()
 
     def _load_data(self, data_filename, precalculated):
         """
@@ -250,7 +252,28 @@ class StabilitasFilter(object):
 
 
     def _find_anomalies(self):
-        pass
+        self.cities_anomalies = {}
+        for city in self.reports_df["city"].unique():
+            series = self.cities_timeseries[city]
+
+            rolling_std = series.rolling(
+                window=self.window,
+                min_periods=1,
+                center=False
+            ).std()
+            rolling_mean = series.rolling(
+                window=self.window,
+                min_periods=1,
+                center=False
+            ).mean()
+
+            threshold = rolling_mean + (self.threshold * rolling_std)
+            anomalies = [point[0] if point[0] > point[1] else None for point in izip(series, threshold)]
+
+            self.cities_anomalies[city] = pd.Series(
+                                            anomalies,
+                                            index=series.index
+                                        )
 
     def test(self):
         print "Cities Loaded, shape: ", self.cities_df.shape
