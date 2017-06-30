@@ -1,4 +1,6 @@
 from stabilitasfilter import StabilitasFilter
+import matplotlib.pyplot as plt
+plt.style.use("ggplot")
 
 def main():
     # Filepaths assume running this script from stabilitas-thresholds/ dir
@@ -16,6 +18,12 @@ def main():
 
 
     filter_layer.test()
+    plt.scatter(
+        filter_layer.cities_timeseries["Berlin"].index,
+        filter_layer.cities_timeseries["Berlin"].values
+    )
+    plt.xlim("2016-12-12", "2016-12-27")
+    plt.show()
 
 
 if __name__ == '__main__':

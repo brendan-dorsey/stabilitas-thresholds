@@ -102,12 +102,16 @@ class StabilitasFilter(object):
             anomaly_threshold - int, number of standard deviations above
                 the mean a resample bucket needs to be in order to pass
                 through the filter to the next layer
+            precalculated - bool, indicate whether city labels have been
+                precalculated or not
         Output: fit model ready to return anomaly information
         """
         self.resample_size = resample_size
         self.window = self.window_to_minutes_converter[window_size]
         self.threshold = anomaly_threshold
+
         self._load_data(data_filename, precalculated)
+        self._build_cities_timeseries()
 
     def _load_data(self, data_filename, precalculated):
         """
@@ -142,7 +146,6 @@ class StabilitasFilter(object):
         )
         self._preprocess_data()
         self._map_reports_to_cities(precalculated)
-
 
     def _preprocess_data(self):
         """
@@ -191,6 +194,15 @@ class StabilitasFilter(object):
             self.reports_df["severity"].map(severity_score_quadratic)
 
     def _map_reports_to_cities(self, precalculated=False):
+        """
+        Method that calculates the haversine distance from each report to each
+        city, identifies the city closest to each report, and labels each
+        report with its closest city.
+
+        Inputs: precalculated - bool, indicates whether to use precalculated
+        values.
+        Output: self with labeled reports dataframe
+        """
         if precalculated:
             precalculated_filename = "data/city_label_indices.csv"
             city_label_indices = pd.read_csv(
@@ -212,10 +224,32 @@ class StabilitasFilter(object):
 
         self.reports_df["city"] = city_labels
 
-    def _build_cities(self):
-        pass
+    def _build_cities_timeseries(self):
+        """
+        Method to build resampled timeseries for each city in the dataset.
+        """
+        self.cities_timeseries = {}
+        for city in self.reports_df["city"].unique():
+            city_df = self.reports_df[self.reports_df["city"] == city]
 
-    def _find_anomalies(self, city):
+            # Use engineered quadratic severity score
+            ts = pd.Series(
+                city_df["severity_quadratic"].values,
+                index=city_df["start_ts"]
+            )
+            self.cities_timeseries[city] = np.log(
+                ts.resample("{}T".format(self.resample_size)
+                ).sum())
+
+            # Use simple volume of reporting
+            # ts = pd.Series(
+            #     np.ones(len(city_df)),
+            #     index=city_df["start_ts"]
+            # )
+            # self.cities_timeseries[city] = ts.resample("{}T").sum()
+
+
+    def _find_anomalies(self):
         pass
 
     def test(self):
