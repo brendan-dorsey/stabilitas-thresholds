@@ -335,10 +335,8 @@ class StabilitasFilter(object):
             #                                 anomalies,
             #                                 index=series.index
             #                             )
-            self.city_lookup[city]["anomalies"] = pd.Series(
-                                                        anomalies,
-                                                        index=series.index
-                                                    )
+            anomalies = pd.Series(anomalies, index=series.index)
+            self.city_lookup[city]["anomalies"] = anomalies.dropna()
 
     def _anomalies_by_day(self):
         """
@@ -379,6 +377,45 @@ class StabilitasFilter(object):
         longs = [self.city_lookup[city]["location"][1] for city in cities]
 
         return (lats, longs)
+
+    def _flag_anomalous_reports(self):
+        self.reports_df["anomalous"] = np.zeros(len(self.reports_df))
+        time_delta = pd.Timedelta(minutes=self.resample_size)
+        for city in self.city_lookup.keys():
+            try:
+                anomalies = self.city_lookup[city]["anomalies"]
+
+                # if sum(anomalies) == 0:
+                #     continue
+                # print anomalies
+                # print sum(anomalies)
+                # break
+
+                for time in anomalies.index:
+                    print "City: ", city
+                    print "Time: ", time
+                    print "Start: ", time - time_delta
+                    print self.reports_df[
+                    # (self.reports_df["city"] == city) &
+                    (self.reports_df["start_ts"] >= time - time_delta) &
+                    (self.reports_df["start_ts"] <= time)
+                    ]
+                    break
+
+                    # self.reports_df[
+                        # (self.reports_df["city"] == city) &
+                        # (self.reports_df["start_ts"] >= time - time_delta) &
+                        # (self.reports_df["start_ts"] < time), "anomalous"] += 1
+
+                # if len(anomalies) > 5:
+                #     print anomalies.index[0]
+                #     print pd.Timedelta(minutes=self.resample_size)
+                #     print anomalies.index[0] - pd.Timedelta(minutes=self.resample_size)
+                #     break
+            except:
+                continue
+        print sum(self.reports_df["anomalous"])
+
 
 
 

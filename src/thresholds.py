@@ -29,7 +29,11 @@ def main():
                                     finish-start
                                 )
 
-    lats, longs = filter_layer.get_anomaly_locations("2016-12-14")
+    # filter_layer._flag_anomalous_reports()
+    # print
+
+
+    lats, longs = filter_layer.get_anomaly_locations("2016-12-25")
     print "Number of elevated cities: ", len(lats)
     plt.scatter(longs, lats)
     plt.show()
