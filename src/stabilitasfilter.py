@@ -4,8 +4,10 @@ from haversine import haversine
 from itertools import izip
 from collections import defaultdict
 
+
 def main():
     print "Building Filter Model..."
+
 
 class StabilitasFilter(object):
     def __init__(self, cities_filename, cleaned=True):
@@ -21,12 +23,7 @@ class StabilitasFilter(object):
             "4w": 40320
         }
 
-    def _load_cities(
-            self,
-            cities_filename,
-            cleaned=True,
-            min_size=300000
-        ):
+    def _load_cities(self, cities_filename, cleaned=True):
         """
         Load cities data from the given file.
 
@@ -77,8 +74,6 @@ class StabilitasFilter(object):
             self.cities_df = self.cities_df.reset_index()
             self.cities_df = self.cities_df[target_city_columns]
 
-
-
         self.cities_df["lat_long"] = zip(
                                 self.cities_df["latitude"],
                                 self.cities_df["longitude"]
@@ -88,7 +83,7 @@ class StabilitasFilter(object):
             lat_long = self.cities_df[
                         self.cities_df["name"] == city
                         ]["lat_long"].values[0]
-            self.city_lookup[city] = {"location":lat_long}
+            self.city_lookup[city] = {"location": lat_long}
 
     def fit(
         self,
@@ -128,7 +123,8 @@ class StabilitasFilter(object):
         Output: fit model ready to return anomaly information
         """
         self.resample_size = resample_size
-        self.window = self.window_to_minutes_converter[window_size] / resample_size
+        self.window = \
+            self.window_to_minutes_converter[window_size] / resample_size
         self.threshold = anomaly_threshold
         self.start = pd.to_datetime(start_datetime)
         self.end = pd.to_datetime(end_datetime)
@@ -164,8 +160,6 @@ class StabilitasFilter(object):
             "severity"
         ]
 
-
-
         self.reports_df = pd.read_table(
             data_filename,
             header=None,
@@ -183,6 +177,7 @@ class StabilitasFilter(object):
         Output: self with cleaned and engineered dataframe
         """
         print "Processing data..."
+
         def severity_score_quadratic(severity_rating):
             if severity_rating == "low":
                 return 1
@@ -227,7 +222,6 @@ class StabilitasFilter(object):
         )
         self.reports_df["severity_quadratic"] =\
             self.reports_df["severity"].map(severity_score_quadratic)
-
 
     def _map_reports_to_cities(self, precalculated=False):
         """
@@ -288,17 +282,16 @@ class StabilitasFilter(object):
 
                 # Try with mean instead of sum
                 self.city_lookup[city]["timeseries"] = np.log(
-                    ts.resample("{}T".format(self.resample_size)
-                    ).mean())
+                    ts.resample("{}T".format(self.resample_size)).mean()
+                )
             else:
-            # Use only volume of reporting
+                # Use only volume of reporting
                 ts = pd.Series(
                     np.ones(len(city_df)),
                     index=city_df["start_ts"]
                 )
-                self.city_lookup[city]["timeseries"] = ts.resample("{}T"
-                                        .format(self.resample_size)).sum()
-
+                self.city_lookup[city]["timeseries"] = \
+                    ts.resample("{}T".format(self.resample_size)).sum()
 
     def _find_anomalies(self):
         """
@@ -396,28 +389,28 @@ class StabilitasFilter(object):
                     print "Time: ", time
                     print "Start: ", time - time_delta
                     print self.reports_df[
-                    # (self.reports_df["city"] == city) &
-                    (self.reports_df["start_ts"] >= time - time_delta) &
-                    (self.reports_df["start_ts"] <= time)
+                        # (self.reports_df["city"] == city) &
+                        (self.reports_df["start_ts"] >= time - time_delta) &
+                        (self.reports_df["start_ts"] <= time)
                     ]
                     break
 
                     # self.reports_df[
                         # (self.reports_df["city"] == city) &
                         # (self.reports_df["start_ts"] >= time - time_delta) &
-                        # (self.reports_df["start_ts"] < time), "anomalous"] += 1
+                        # (self.reports_df["start_ts"] < time),
+                        # "anomalous"
+                        # ] += 1
 
                 # if len(anomalies) > 5:
                 #     print anomalies.index[0]
                 #     print pd.Timedelta(minutes=self.resample_size)
-                #     print anomalies.index[0] - pd.Timedelta(minutes=self.resample_size)
+                #     print anomalies.index[0] - \
+                #     pd.Timedelta(minutes=self.resample_size)
                 #     break
             except:
                 continue
         print sum(self.reports_df["anomalous"])
-
-
-
 
     def test(self):
         print "Cities Loaded, shape: ", self.cities_df.shape

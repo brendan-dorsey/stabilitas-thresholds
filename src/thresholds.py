@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 plt.style.use("ggplot")
 
+
 def main():
     start = time.time()
     print "Started at {}.".format(datetime.now().time())
@@ -32,7 +33,6 @@ def main():
     # filter_layer._flag_anomalous_reports()
     # print
 
-
     lats, longs = filter_layer.get_anomaly_locations("2016-12-25")
     print "Number of elevated cities: ", len(lats)
     plt.scatter(longs, lats)
@@ -45,7 +45,8 @@ def main():
     # )
     # plt.xlim("2016-12-12", "2016-12-27")
 
-    # anomaly_counts = [len(cities) for cities in filter_layer.date_dictionary.values()]
+    # anomaly_counts = [len(cities) for cities in
+    #                   filter_layer.date_dictionary.values()]
     # plt.bar(filter_layer.date_dictionary.keys(), anomaly_counts, width=1)
 
 
