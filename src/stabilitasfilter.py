@@ -134,6 +134,7 @@ class StabilitasFilter(object):
         self._build_cities_timeseries(quadratic)
         self._find_anomalies()
         self._anomalies_by_day()
+        self._flag_anomalous_reports()
 
     def _load_data(self, data_filename, precalculated):
         """
@@ -197,6 +198,7 @@ class StabilitasFilter(object):
             "lon",
             "id",
             "title",
+            "notes",
             "start_ts",
             "report_type",
             "severity"
@@ -276,14 +278,14 @@ class StabilitasFilter(object):
                     city_df["severity_quadratic"].values,
                     index=city_df["start_ts"]
                 )
-                # self.city_lookup[city]["timeseries"] = np.log(
-                #     ts.resample("{}T".format(self.resample_size)
-                #     ).sum())
+                self.city_lookup[city]["timeseries"] = np.log(
+                    ts.resample("{}T".format(self.resample_size)
+                    ).sum())
 
                 # Try with mean instead of sum
-                self.city_lookup[city]["timeseries"] = np.log(
-                    ts.resample("{}T".format(self.resample_size)).mean()
-                )
+                # self.city_lookup[city]["timeseries"] = np.log(
+                #     ts.resample("{}T".format(self.resample_size)).mean()
+                # )
             else:
                 # Use only volume of reporting
                 ts = pd.Series(
@@ -314,8 +316,6 @@ class StabilitasFilter(object):
             ).mean()
 
             threshold = rolling_mean + self.threshold * rolling_std
-            # print threshold
-            # break
 
             anomalies = []
             for sample, threshold in izip(series, threshold):
@@ -324,10 +324,6 @@ class StabilitasFilter(object):
                 else:
                     anomalies.append(None)
 
-            # self.cities_anomalies[city] = pd.Series(
-            #                                 anomalies,
-            #                                 index=series.index
-            #                             )
             anomalies = pd.Series(anomalies, index=series.index)
             self.city_lookup[city]["anomalies"] = anomalies.dropna()
 
@@ -372,45 +368,29 @@ class StabilitasFilter(object):
         return (lats, longs)
 
     def _flag_anomalous_reports(self):
+        """
+        Method to apply boolean flag to reports to indicate whether they are
+        part of anomalous time buckets.
+        """
+        print "Flagging anomalous reports..."
         self.reports_df["anomalous"] = np.zeros(len(self.reports_df))
         time_delta = pd.Timedelta(minutes=self.resample_size)
         for city in self.city_lookup.keys():
             try:
                 anomalies = self.city_lookup[city]["anomalies"]
-
-                # if sum(anomalies) == 0:
-                #     continue
-                # print anomalies
-                # print sum(anomalies)
-                # break
-
                 for time in anomalies.index:
-                    print "City: ", city
-                    print "Time: ", time
-                    print "Start: ", time - time_delta
-                    print self.reports_df[
-                        # (self.reports_df["city"] == city) &
+                    self.reports_df.loc[
+                        ((self.reports_df["city"] == city) &
                         (self.reports_df["start_ts"] >= time - time_delta) &
-                        (self.reports_df["start_ts"] <= time)
-                    ]
-                    break
-
-                    # self.reports_df[
-                        # (self.reports_df["city"] == city) &
-                        # (self.reports_df["start_ts"] >= time - time_delta) &
-                        # (self.reports_df["start_ts"] < time),
-                        # "anomalous"
-                        # ] += 1
-
-                # if len(anomalies) > 5:
-                #     print anomalies.index[0]
-                #     print pd.Timedelta(minutes=self.resample_size)
-                #     print anomalies.index[0] - \
-                #     pd.Timedelta(minutes=self.resample_size)
-                #     break
+                        (self.reports_df["start_ts"] <= time)),
+                        "anomalous"
+                        ] = 1
             except:
                 continue
-        print sum(self.reports_df["anomalous"])
+
+        anomalies_df = self.reports_df[self.reports_df["anomalous"] == 1]
+        anomalies_df.to_csv("data/flagged_reports.csv", header=False, mode="a")
+        # print sum(self.reports_df["anomalous"])
 
     def test(self):
         print "Cities Loaded, shape: ", self.cities_df.shape

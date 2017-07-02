@@ -18,9 +18,9 @@ def main():
         data_filename,
         start_datetime="2016-12-12",
         end_datetime="2016-12-26",
-        resample_size=3,
+        resample_size=5,
         window_size="1w",
-        anomaly_threshold=1,
+        anomaly_threshold=2,
         precalculated=True,
         quadratic=True
     )
@@ -30,13 +30,12 @@ def main():
                                     finish-start
                                 )
 
-    # filter_layer._flag_anomalous_reports()
-    # print
+    print "Number of anomalous reports: ", sum(filter_layer.reports_df["anomalous"])
 
-    lats, longs = filter_layer.get_anomaly_locations("2016-12-25")
-    print "Number of elevated cities: ", len(lats)
-    plt.scatter(longs, lats)
-    plt.show()
+    # lats, longs = filter_layer.get_anomaly_locations("2016-12-25")
+    # print "Number of elevated cities: ", len(lats)
+    # plt.scatter(longs, lats)
+    # plt.show()
 
     # filter_layer.test()
     # plt.scatter(
