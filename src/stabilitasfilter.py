@@ -3,10 +3,7 @@ import numpy as np
 from haversine import haversine
 from itertools import izip
 from collections import defaultdict
-
-
-def main():
-    print "Building Filter Model..."
+import time
 
 
 class StabilitasFilter(object):
@@ -30,6 +27,7 @@ class StabilitasFilter(object):
         Input: filename
         Output: Self with stored city data.
         """
+        start = time.time()
         print "Loading cities..."
         if cleaned:
             self.cities_df = pd.read_csv(cities_filename)
@@ -84,6 +82,10 @@ class StabilitasFilter(object):
                         self.cities_df["name"] == city
                         ]["lat_long"].values[0]
             self.city_lookup[city] = {"location": lat_long}
+        finish = time.time()
+        print "{0} cities loaded in {1} seconds.".format(
+            len(self.cities_df), finish-start
+        )
 
     def fit(
         self,
@@ -134,7 +136,6 @@ class StabilitasFilter(object):
         self._build_cities_timeseries(quadratic)
         self._find_anomalies()
         self._anomalies_by_day()
-        self._flag_anomalous_reports()
 
     def _load_data(self, data_filename, precalculated):
         """
@@ -144,6 +145,7 @@ class StabilitasFilter(object):
         Output: Self with stored and processed report data
         """
         print "Loading data..."
+        start = time.time()
         column_names = [
             "lat",
             "lon",
@@ -168,6 +170,10 @@ class StabilitasFilter(object):
         )
         self._preprocess_data()
         self._map_reports_to_cities(precalculated)
+        finish = time.time()
+        print "{0} reports loaded in {1} seconds.".format(
+            len(self.reports_df), finish-start
+        )
 
     def _preprocess_data(self):
         """
@@ -178,6 +184,7 @@ class StabilitasFilter(object):
         Output: self with cleaned and engineered dataframe
         """
         print "Processing data..."
+        start = time.time()
 
         def severity_score_quadratic(severity_rating):
             if severity_rating == "low":
@@ -198,7 +205,6 @@ class StabilitasFilter(object):
             "lon",
             "id",
             "title",
-            "notes",
             "start_ts",
             "report_type",
             "severity"
@@ -225,6 +231,9 @@ class StabilitasFilter(object):
         self.reports_df["severity_quadratic"] =\
             self.reports_df["severity"].map(severity_score_quadratic)
 
+        finish = time.time()
+        print "Reports processed in {0} seconds".format(finish-start)
+
     def _map_reports_to_cities(self, precalculated=False):
         """
         Method that calculates the haversine distance from each report to each
@@ -236,6 +245,7 @@ class StabilitasFilter(object):
         Output: self with labeled reports dataframe
         """
         print "Labeling reports with cities..."
+        start = time.time()
         if precalculated:
             precalculated_filename = "data/city_label_indices.csv"
             city_label_indices = pd.read_csv(
@@ -263,12 +273,18 @@ class StabilitasFilter(object):
 
         self.reports_df["city"] = city_labels
 
+        finish = time.time()
+        print "Reports labeled with cities in {0} seconds.".format(
+            finish-start
+        )
+
     def _build_cities_timeseries(self, quadratic):
         """
         Method to build resampled timeseries for each city in the dataset.
         """
         print "Building city timeseries..."
-        # self.cities_timeseries = {}
+        start = time.time()
+
         for city in self.reports_df["city"].unique():
             city_df = self.reports_df[self.reports_df["city"] == city]
 
@@ -286,6 +302,7 @@ class StabilitasFilter(object):
                 # self.city_lookup[city]["timeseries"] = np.log(
                 #     ts.resample("{}T".format(self.resample_size)).mean()
                 # )
+
             else:
                 # Use only volume of reporting
                 ts = pd.Series(
@@ -295,12 +312,15 @@ class StabilitasFilter(object):
                 self.city_lookup[city]["timeseries"] = \
                     ts.resample("{}T".format(self.resample_size)).sum()
 
+        finish = time.time()
+        print "City timeseries calculated in {0} seconds.".format(finish-start)
+
     def _find_anomalies(self):
         """
         Method to find anomalies in the built timeseries.
         """
         print "Detecting anomalies..."
-        # self.cities_anomalies = {}
+        start = time.time()
         for city in self.reports_df["city"].unique():
             series = self.city_lookup[city]["timeseries"]
 
@@ -326,6 +346,8 @@ class StabilitasFilter(object):
 
             anomalies = pd.Series(anomalies, index=series.index)
             self.city_lookup[city]["anomalies"] = anomalies.dropna()
+        finish = time.time()
+        print "Anomalies detected in {0} seconds.".format(finish-start)
 
     def _anomalies_by_day(self):
         """
@@ -333,6 +355,7 @@ class StabilitasFilter(object):
         pairs.
         """
         print "Grouping anomalous cities by day..."
+        start = time.time()
         self.date_dictionary = defaultdict(list)
         for city in self.city_lookup.keys():
             try:
@@ -345,6 +368,9 @@ class StabilitasFilter(object):
                 # print daily_anomalies[day]
                 if daily_anomalies[day] > 0:
                     self.date_dictionary[day.date()].append(city)
+
+        finish = time.time()
+        print "Anomalies grouped in {0} seconds.".format(finish-start)
 
     def get_anomaly_cities(self, date):
         """
@@ -367,22 +393,23 @@ class StabilitasFilter(object):
 
         return (lats, longs)
 
-    def _flag_anomalous_reports(self):
+    def flag_anomalous_reports(self):
         """
         Method to apply boolean flag to reports to indicate whether they are
         part of anomalous time buckets.
         """
         print "Flagging anomalous reports..."
+        start = time.time()
         self.reports_df["anomalous"] = np.zeros(len(self.reports_df))
         time_delta = pd.Timedelta(minutes=self.resample_size)
         for city in self.city_lookup.keys():
             try:
                 anomalies = self.city_lookup[city]["anomalies"]
-                for time in anomalies.index:
+                for timestamp in anomalies.index:
                     self.reports_df.loc[
                         ((self.reports_df["city"] == city) &
-                        (self.reports_df["start_ts"] >= time - time_delta) &
-                        (self.reports_df["start_ts"] <= time)),
+                        (self.reports_df["start_ts"] >= timestamp - time_delta) &
+                        (self.reports_df["start_ts"] <= timestamp)),
                         "anomalous"
                         ] = 1
             except:
@@ -390,15 +417,7 @@ class StabilitasFilter(object):
 
         anomalies_df = self.reports_df[self.reports_df["anomalous"] == 1]
         anomalies_df.to_csv("data/flagged_reports.csv", header=False, mode="a")
-        # print sum(self.reports_df["anomalous"])
-
-    def test(self):
-        print "Cities Loaded, shape: ", self.cities_df.shape
-        print "Reports Loaded, shape: ", self.reports_df.shape
-        print "Reports Mapped, cities: ", len(self.reports_df["city"].unique())
-        print ""
-        # print self.reports_df.info()
-        print "Filter Functioning"
-
-if __name__ == '__main__':
-    main()
+        finish = time.time()
+        print "{0} anomalies flagged in {1} seconds.".format(
+            sum(self.reports_df["anomalous"]), finish-start
+        )
