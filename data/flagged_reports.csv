@@ -1,3 +1,4 @@
+,lat,lon,id,title,start_ts,report_type,severity,lat_long,severity_quadratic,city,anomalous
 47,39.95233,-75.16379,xECk7abA5hGahKMCZNc2RA,Police: Teen was targeted in west Philadelphia shooting,2016-12-12 20:09:46,Physical Threats,medium,"(39.952329999999996, -75.163790000000006)",9,Philadelphia,1.0
 50,33.749,-84.38798,1Bf6jKfA5hGjPaUCZNc2RA,"Kandi Burruss Accuses Phaedra Parks Of Lying About Bomb Threat, Says Mama Joyce Needs A ...",2016-12-12 20:14:13,Physical Threats,moderate,"(33.749000000000002, -84.387979999999999)",4,Atlanta,1.0
 61,37.566,126.9784,aEEW4KfA5hGnLacCZNc2RA,South Korea PM to be briefed on state affairs as Park impeached,2016-12-12 20:16:33,Geopolitical,moderate,"(37.566000000000003, 126.97839999999999)",4,Seoul,1.0

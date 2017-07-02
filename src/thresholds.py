@@ -7,6 +7,9 @@ plt.style.use("ggplot")
 
 
 def main():
+    """
+    Main function to run both layers of Stabilitas Thresholds app.
+    """
     start = time.time()
     print "Started at {}.".format(datetime.now().time())
     # Filepaths assume running this script from stabilitas-thresholds/ dir
@@ -21,15 +24,18 @@ def main():
         resample_size=3,
         window_size="1w",
         anomaly_threshold=1,
-        precalculated=True,
+        precalculated=False,
         quadratic=True
     )
 
     # These settings return 8.4% of reports as anomalous out of the sample data
-    # Model completes in about 330 seconds for 92884 reports, with haversine
-    # Filter can complete ~280 reports per second
+    # Layer completes in about 330 seconds for 92884 reports, with haversine
+    # Layer can complete ~280 reports per second
 
-    anomalies_df = filter_layer.get_anomaly_reports(write_to_file=False)
+    anomalies_df = filter_layer.get_anomaly_reports(write_to_file=True)
+    date_lookup = filter_layer.date_lookup
+    city_lookup = filter_layer.city_lookup
+
     finish = time.time()
     print "Finished at {0} in {1} seconds.".format(
                                     datetime.now().time(),

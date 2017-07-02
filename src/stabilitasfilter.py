@@ -277,7 +277,7 @@ class StabilitasFilter(object):
             indices_df.to_csv(
                 "data/city_label_indices.csv",
                 header=False,
-                mode="a"
+                mode="w"
             )
 
         city_labels = []
@@ -371,7 +371,7 @@ class StabilitasFilter(object):
         """
         print "Grouping anomalous cities by day..."
         start = time.time()
-        self.date_dictionary = defaultdict(list)
+        self.date_lookup = defaultdict(list)
         for city in self.city_lookup.keys():
             try:
                 series = self.city_lookup[city]["anomalies"]
@@ -382,7 +382,7 @@ class StabilitasFilter(object):
             for day in daily_anomalies.index:
                 # print daily_anomalies[day]
                 if daily_anomalies[day] > 0:
-                    self.date_dictionary[day.date()].append(city)
+                    self.date_lookup[day.date()].append(city)
 
         finish = time.time()
         print "Anomalies grouped in {0} seconds.".format(finish-start)
@@ -394,7 +394,7 @@ class StabilitasFilter(object):
         Outpus: list of cities
         """
         query = pd.to_datetime(date).date()
-        return self.date_dictionary[query]
+        return self.date_lookup[query]
 
     def get_anomaly_locations(self, date):
         """
@@ -434,8 +434,7 @@ class StabilitasFilter(object):
         if write_to_file:
             anomalies_df.to_csv(
                 "data/flagged_reports.csv",
-                header=False,
-                mode="a"
+                mode="w"
             )
         finish = time.time()
         print "{0} anomalies flagged in {1} seconds.".format(
