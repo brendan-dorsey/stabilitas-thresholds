@@ -11,6 +11,19 @@ class StabilitasFilter(object):
         """
         Instantiate a StabilitasFilter object with cities specified in
         the passed file.
+
+        Callable methods are:
+        fit - load and process data, identify anomalies, build reference
+            dictionaries
+        get_anomaly_reports - returns dataframe of anomalous reports to pass to
+            StabilitasFinder model. Will write the results to a csv file in data
+            directory by default (disable by calling with False as argument)
+        get_anomaly_locations - returns tuple of lists of latitudes and
+            longitudes of cities with anomalies detected on the passed in
+            date -> ([lats], [longs])
+        get_anomaly_cities - returns list of cities with anomalies detected on
+            the passed in date, primarily for use within the
+            get_anomaly_locations method -> [cities]
         """
         self._load_cities(cities_filename, cleaned)
         self.window_to_minutes_converter = {
@@ -183,7 +196,7 @@ class StabilitasFilter(object):
         Input: self with raw dataframe initialized
         Output: self with cleaned and engineered dataframe
         """
-        print "Processing data..."
+        print "        Processing data..."
         start = time.time()
 
         def severity_score_quadratic(severity_rating):
@@ -232,7 +245,7 @@ class StabilitasFilter(object):
             self.reports_df["severity"].map(severity_score_quadratic)
 
         finish = time.time()
-        print "Reports processed in {0} seconds".format(finish-start)
+        print "        Reports processed in {0} seconds".format(finish-start)
 
     def _map_reports_to_cities(self, precalculated=False):
         """
@@ -244,7 +257,7 @@ class StabilitasFilter(object):
         values.
         Output: self with labeled reports dataframe
         """
-        print "Labeling reports with cities..."
+        print "        Labeling reports with cities..."
         start = time.time()
         if precalculated:
             precalculated_filename = "data/city_label_indices.csv"
@@ -274,13 +287,15 @@ class StabilitasFilter(object):
         self.reports_df["city"] = city_labels
 
         finish = time.time()
-        print "Reports labeled with cities in {0} seconds.".format(
+        print "        Reports labeled with cities in {0} seconds.".format(
             finish-start
         )
 
     def _build_cities_timeseries(self, quadratic):
         """
         Method to build resampled timeseries for each city in the dataset.
+        Inputs: quadratic - bool, indicate whether to use quadratic severity
+            score (True) or volume of reports (False)
         """
         print "Building city timeseries..."
         start = time.time()
@@ -393,7 +408,7 @@ class StabilitasFilter(object):
 
         return (lats, longs)
 
-    def flag_anomalous_reports(self):
+    def get_anomaly_reports(self, write_to_file=True):
         """
         Method to apply boolean flag to reports to indicate whether they are
         part of anomalous time buckets.
@@ -416,8 +431,14 @@ class StabilitasFilter(object):
                 continue
 
         anomalies_df = self.reports_df[self.reports_df["anomalous"] == 1]
-        anomalies_df.to_csv("data/flagged_reports.csv", header=False, mode="a")
+        if write_to_file:
+            anomalies_df.to_csv(
+                "data/flagged_reports.csv",
+                header=False,
+                mode="a"
+            )
         finish = time.time()
         print "{0} anomalies flagged in {1} seconds.".format(
             sum(self.reports_df["anomalous"]), finish-start
         )
+        return anomalies_df

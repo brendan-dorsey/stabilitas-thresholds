@@ -27,9 +27,9 @@ def main():
 
     # These settings return 8.4% of reports as anomalous out of the sample data
     # Model completes in about 330 seconds for 92884 reports, with haversine
-    # Can complete ~280 reports per second
+    # Filter can complete ~280 reports per second
 
-    filter_layer.flag_anomalous_reports()
+    anomalies_df = filter_layer.get_anomaly_reports(write_to_file=False)
     finish = time.time()
     print "Finished at {0} in {1} seconds.".format(
                                     datetime.now().time(),
