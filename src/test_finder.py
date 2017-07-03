@@ -12,12 +12,17 @@ def main():
     """
     finder = StabilitasFinder()
     finder.load_data("data/flagged_reports.csv")
+
     finder.label_critical_reports()
 
-    # print finder.flagged_df.info()
-    # print finder.flagged_df.describe()
-    # print finder.flagged_df.head()
-    # print finder.flagged_df.tail()
+    # cutoffs = [10, 20, 30, 40, 50]
+    # for cutoff in cutoffs:
+    #     finder.label_critical_reports(cutoff)
+
+    finder.fit()
+    finder.predict_proba()
+
+
 
 
 if __name__ == '__main__':

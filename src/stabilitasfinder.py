@@ -1,5 +1,8 @@
 import numpy as np
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import train_test_split
 
 
 class StabilitasFinder(object):
@@ -28,11 +31,11 @@ class StabilitasFinder(object):
         df = pd.read_csv(filename)
         df = df.reset_index()
         df["start_ts"] = pd.to_datetime(df["start_ts"])
-        df["critical"] = np.zeros(len(df))
         self.flagged_df = df.sort_values("start_ts")
         # print self.flagged_df.info()
 
     def label_critical_reports(self, cutoff=30):
+        self.flagged_df["critical"] = np.zeros(len(self.flagged_df))
 
         for city in self.flagged_df["city"].unique():
 
@@ -54,45 +57,45 @@ class StabilitasFinder(object):
                     self.flagged_df.loc[index, "critical"] = 1
         # print sum(self.flagged_df["critical"])
         critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
-        print critical_df["city"].unique()
+        print critical_df.groupby("city").count()["critical"]
         print sum(self.flagged_df["critical"])
 
     def preprocesses_data(self):
         """
         Tokenize, lemmatize (or stem), vecotrize
         """
-        pass
+        X = self.flagged_df["title"]
+        y = self.flagged_df["critical"]
+        X_train, X_test, self.y_train, self.y_test = train_test_split(X, y)
 
-    def tokenize(self):
-        """
-        Use tokenizer, either NLTK or SKLearn
-        """
-        pass
+        self.vectorizer = TfidfVectorizer(analyzer="word", stop_words="english")
+        self.X_train = self.vectorizer.fit_transform(X_train)
+        self.X_test = self.vectorizer.transform(X_test)
 
-    def lemmatize(self):
-        """
-        Use NLTK WordNet Lemmatizer
-        """
-        pass
-
-    def vectorize(self):
-        """
-        Use SKLearn TfIdf Vectorizer
-        """
-        pass
 
     def fit(self):
         """
         Use SKLearn Multinomial Naive Bayes
         """
-        pass
+        self.preprocesses_data()
+        self.model = MultinomialNB()
+        self.model.fit(self.X_train, self.y_train)
 
-    def predict_proba(self):
+    def predict_proba(self, X=None, y=None):
         """
         Predict probability that a given report is critical, from MultinomialNB
         model.
         """
-        pass
+        if not (X or y):
+            probas = [prob[1] for prob in self.model.predict_proba(self.X_test)]
+
+        probas = [1 if prob > 0.5 else 0 for prob in probas]
+        y_test = list(self.y_test)
+
+        result = [1 for i in range(len(probas)) if probas[i] == y_test[i]]
+
+        print float(sum(result)) / len(self.y_test)
+
 
     def predict(self, X, y=None, threshold=0.2):
         """
