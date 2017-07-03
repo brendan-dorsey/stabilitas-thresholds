@@ -21,6 +21,7 @@ def main():
 
     finder.fit()
     finder.predict_proba()
+    print finder.predict()
 
 
 

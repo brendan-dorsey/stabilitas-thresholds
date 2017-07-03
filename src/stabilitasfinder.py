@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
 
 
 class StabilitasFinder(object):
@@ -81,27 +82,24 @@ class StabilitasFinder(object):
         self.model = MultinomialNB()
         self.model.fit(self.X_train, self.y_train)
 
-    def predict_proba(self, X=None, y=None):
+    def predict_proba(self):
         """
         Predict probability that a given report is critical, from MultinomialNB
         model.
         """
-        if not (X or y):
-            probas = [prob[1] for prob in self.model.predict_proba(self.X_test)]
+        self.probas = [prob[1] for prob in self.model.predict_proba(self.X_test)]
 
-        probas = [1 if prob > 0.5 else 0 for prob in probas]
-        y_test = list(self.y_test)
-
-        result = [1 for i in range(len(probas)) if probas[i] == y_test[i]]
-
-        print float(sum(result)) / len(self.y_test)
+        # print self.probas
 
 
-    def predict(self, X, y=None, threshold=0.2):
+    def predict(self, X=None, y=None, threshold=0.5):
         """
         Classify reports as critical or non-critical, based off predicted
         probability and threshold.
         """
+        predicted = [1 if prob > threshold else 0 for prob in self.probas]
+
+        return confusion_matrix(self.y_test, predicted)
 
     def get_critical_cities(self):
         pass
