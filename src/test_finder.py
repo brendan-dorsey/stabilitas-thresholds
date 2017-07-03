@@ -14,5 +14,11 @@ def main():
     finder.load_data("data/flagged_reports.csv")
     finder.label_critical_reports()
 
+    # print finder.flagged_df.info()
+    # print finder.flagged_df.describe()
+    # print finder.flagged_df.head()
+    # print finder.flagged_df.tail()
+
+
 if __name__ == '__main__':
     main()
