@@ -10,7 +10,7 @@ def main():
     """
     Main function to run both layers of Stabilitas Thresholds app.
     """
-    start = time.time()
+    filter_start = time.time()
     print "Started at {}.".format(datetime.now().time())
     # Filepaths assume running this script from stabilitas-thresholds/ dir
     cities_filename = "data/cities300000.csv"
@@ -36,8 +36,8 @@ def main():
     date_lookup = filter_layer.date_lookup
     city_lookup = filter_layer.city_lookup
 
-    finish = time.time()
-    print "Finished at {0} in {1} seconds.".format(
+    filter_finish = time.time()
+    print "Filter finished at {0} in {1} seconds.".format(
                                     datetime.now().time(),
                                     finish-start
                                 )

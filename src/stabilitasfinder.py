@@ -7,11 +7,15 @@ from sklearn.metrics import confusion_matrix
 
 
 class StabilitasFinder(object):
-    def __init__(self):
+    def __init__(self, date_lookup=None, city_lookup=None):
         """
-
+        Inputs:
+            Date lookup dictionary from StabilitasFilter
+            City lookup dictionary from StabilitasFilter
         Outputs:
+            Compelted Date and City lookup dictionaries.
             {date:
+                [elevated_cities],
                 [critical_cities]
                 }
             {city:
@@ -26,7 +30,8 @@ class StabilitasFinder(object):
                 }
             }
         """
-        pass
+        self.date_lookup = date_lookup
+        self.city_lookup = city_lookup
 
     def load_data(self, filename):
         df = pd.read_csv(filename)
@@ -58,7 +63,7 @@ class StabilitasFinder(object):
                     self.flagged_df.loc[index, "critical"] = 1
         # print sum(self.flagged_df["critical"])
         critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
-        print critical_df.groupby("city").count()["critical"]
+        # print critical_df.groupby("city").count()["critical"]
         print sum(self.flagged_df["critical"])
 
     def preprocesses_data(self):
@@ -92,14 +97,18 @@ class StabilitasFinder(object):
         # print self.probas
 
 
-    def predict(self, X=None, y=None, threshold=0.5):
+    def predict(self, X=None, y=None, threshold=0.37):
         """
         Classify reports as critical or non-critical, based off predicted
         probability and threshold.
-        """
-        predicted = [1 if prob > threshold else 0 for prob in self.probas]
 
-        return confusion_matrix(self.y_test, predicted)
+        From initial testing, a threshold of 0.37 yields a true positive rate of
+        0.802 and a false positive rate of 0.213.
+        """
+        self.predicted = [1 if prob > threshold else 0 for prob in self.probas]
+
+        self.confusion_matrix(self.y_test, self.predicted)
+        return self.predicted
 
     def get_critical_cities(self):
         pass

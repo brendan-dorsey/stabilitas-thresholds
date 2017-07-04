@@ -21,11 +21,14 @@ def main():
     # for cutoff in cutoffs:
     #     finder.label_critical_reports(cutoff)
 
+    # runs = []
+    # for _ in range(1000):
+
     finder.fit()
     finder.predict_proba()
-    # print finder.predict()
 
-    thresholds = np.linspace(0.00, 1, 100)
+    thresholds = np.linspace(0, 1, 101)
+    # thresholds = [0.36, 0.37, 0.38]
     false_positive_rates = []
     true_positive_rates = []
     for threshold in thresholds:
@@ -36,24 +39,47 @@ def main():
         false_positive_rates.append(fpr)
         true_positive_rates.append(tpr)
 
-    area = auc(false_positive_rates, true_positive_rates)
-    fig, ax = plt.subplots(1, figsize=(8,8))
+    iteration = zip(thresholds, true_positive_rates, false_positive_rates)
+    print iteration
 
-    ax.plot(
-        false_positive_rates,
-        true_positive_rates,
-        label="ROC curve (area = {:0.2f})".format(area)
-    )
-    ax.plot([0,1], [0, 1], linestyle="--", color="k")
-    ax.scatter(0.2, 0.99, color="k", label="goal")
-
-    ax.set_xlabel("False Positive Rate")
-    ax.set_ylabel("True Positive Rate")
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.set_title("ROC Curve for First Model")
-    plt.legend(loc="lower right")
-    plt.show()
+    # runs.append(iteration)
+    # low, low_tpr, low_fpr, med, med_tpr, med_fpr, hi, hi_tpr, hi_fpr =\
+    # 0, 0, 0, 0, 0, 0, 0, 0, 0
+    # for run in runs:
+    #     low += run[0][0]
+    #     low_tpr += run[0][1]
+    #     low_fpr += run[0][2]
+    #     med += run[1][0]
+    #     med_tpr += run[1][1]
+    #     med_fpr += run[1][2]
+    #     hi += run[2][0]
+    #     hi_tpr += run[2][1]
+    #     hi_fpr += run[2][2]
+    # results = [
+    #     (low/1000, low_tpr/1000, low_fpr/1000),
+    #     (med/1000, med_tpr/1000, med_fpr/1000),
+    #     (hi/1000, hi_tpr/1000, hi_fpr/1000)
+    # ]
+    # for result in results:
+    #     print result
+    # area = auc(false_positive_rates, true_positive_rates)
+    # fig, ax = plt.subplots(1, figsize=(8,8))
+    #
+    # ax.plot(
+    #     false_positive_rates,
+    #     true_positive_rates,
+    #     label="ROC curve (area = {:0.2f})".format(area)
+    # )
+    # ax.plot([0,1], [0, 1], linestyle="--", color="k")
+    # ax.scatter(0.2, 0.99, color="k", label="goal")
+    #
+    # ax.set_xlabel("False Positive Rate")
+    # ax.set_ylabel("True Positive Rate")
+    # ax.set_xlim(0, 1)
+    # ax.set_ylim(0, 1)
+    # ax.set_title("ROC Curve for First Model")
+    # plt.legend(loc="lower right")
+    # plt.show()
 
 
 

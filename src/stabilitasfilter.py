@@ -108,7 +108,7 @@ class StabilitasFilter(object):
         resample_size=3,
         window_size="1w",
         anomaly_threshold=1,
-        precalculated=False,
+        precalculated=True,
         quadratic=True
     ):
         """
@@ -378,11 +378,12 @@ class StabilitasFilter(object):
             except:
                 continue
             daily_anomalies = series.resample("d").sum()[self.start:self.end]
-            # print daily_anomalies
             for day in daily_anomalies.index:
-                # print daily_anomalies[day]
                 if daily_anomalies[day] > 0:
-                    self.date_lookup[day.date()].append(city)
+                    if len(self.date_lookup[day.date()]) == 0:
+                        self.date_lookup[day.date()].append([city])
+                    else:
+                        self.date_lookup[day.date()][0].append(city)
 
         finish = time.time()
         print "Anomalies grouped in {0} seconds.".format(finish-start)
@@ -408,7 +409,11 @@ class StabilitasFilter(object):
 
         return (lats, longs)
 
-    def get_anomaly_reports(self, write_to_file=True):
+    def get_anomaly_reports(
+        self,
+        write_to_file=True,
+        filename="data/flagged_reports.csv"
+    ):
         """
         Method to apply boolean flag to reports to indicate whether they are
         part of anomalous time buckets.
@@ -433,7 +438,7 @@ class StabilitasFilter(object):
         anomalies_df = self.reports_df[self.reports_df["anomalous"] == 1]
         if write_to_file:
             anomalies_df.to_csv(
-                "data/flagged_reports.csv",
+                filename,
                 mode="w"
             )
         finish = time.time()
