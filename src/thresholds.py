@@ -1,6 +1,8 @@
 from stabilitasfilter import StabilitasFilter
+from stabilitasfinder import StabilitasFinder
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 import time
 from datetime import datetime
 plt.style.use("ggplot")
@@ -24,7 +26,7 @@ def main():
         resample_size=3,
         window_size="1w",
         anomaly_threshold=1,
-        precalculated=False,
+        precalculated=True,
         quadratic=True
     )
 
@@ -33,15 +35,52 @@ def main():
     # This includes haversine calculations for each city/report combination.
     # Layer can complete ~280 reports per second
 
-    anomalies_df = filter_layer.get_anomaly_reports(write_to_file=True)
+    anomalies_df = filter_layer.get_anomaly_reports(write_to_file=False)
     date_lookup = filter_layer.date_lookup
     city_lookup = filter_layer.city_lookup
 
     filter_finish = time.time()
     print "Filter finished at {0} in {1} seconds.".format(
                                     datetime.now().time(),
-                                    finish-start
+                                    filter_finish-filter_start
                                 )
+
+    finder_start = time.time()
+    finder_layer = StabilitasFinder()
+    finder_layer.load_data(
+        source=anomalies_df,
+        date_lookup=date_lookup,
+        city_lookup=city_lookup
+    )
+
+    # For Evaluation and Training Modes, we need to label data
+    finder_layer.label_critical_reports()
+
+    finder_layer.fit(mode="evaluate")
+    finder_layer.predict()
+
+    finder_layer._labeled_critical_cities_by_day()
+
+    finder_finish = time.time()
+
+    print len(finder_layer.date_lookup["2016-12-20"])
+    print len(finder_layer.date_lookup["2016-12-20"][0])
+    print len(finder_layer.date_lookup["2016-12-20"][1])
+    print finder_layer.date_lookup["2016-12-20"][1]
+
+    print ""
+    print "Finder finished at {0} in {1} seconds.".format(
+                                    datetime.now().time(),
+                                    finder_finish-finder_start
+    )
+    print ""
+    print "Ensemble finished at {0} in {1} seconds.".format(
+                                    datetime.now().time(),
+                                    finder_finish-filter_start
+    )
+
+
+
 
     ########################################
     ########################################

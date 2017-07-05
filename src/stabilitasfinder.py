@@ -36,34 +36,32 @@ class StabilitasFinder(object):
             Load data from StabilitasFilter by calling load_data(**kwargs)
             If evaluating or training, label critical reports by calling
                 label_critical_reports(cutoff)
-            Fit model to training data
+            Fit model to training data by calling fit(mode)
+                NB: mode options are "evaluate", "train", and "predict"
         """
 
 
     def load_data(self,
-        filename=None,
-        dataframe=None,
+        source,
         date_lookup=None,
         city_lookup=None
     ):
         """
-        Method to load data into Finder Layer. Looks for a file first, then
-        a dataframe. Data must be passed from StabilitasFilter.
+        Method to load data into Finder Layer. Data must be passed from
+        StabilitasFilter as either a file or pandas DataFrame.
         """
         self.date_lookup = date_lookup
         self.city_lookup = city_lookup
 
-        if filename != None:
-            df = pd.read_csv(filename)
+        if isinstance(source, str):
+            df = pd.read_csv(source)
             df = df.reset_index()
             df["start_ts"] = pd.to_datetime(df["start_ts"])
             self.flagged_df = df.sort_values("start_ts")
-        elif dataframe != None:
-            df = dataframe.reset_index()
+        else:
+            df = source.reset_index()
             df["start_ts"] = pd.to_datetime(df["start_ts"])
             self.flagged_df = df.sort_values("start_ts")
-        else:
-            print "Must load either a file or a dataframe from StabilitasFilter"
 
     def label_critical_reports(self, cutoff=30):
         self.flagged_df["critical"] = np.zeros(len(self.flagged_df))
@@ -86,7 +84,7 @@ class StabilitasFinder(object):
                     self.flagged_df.loc[index, "critical"] = 1
 
         critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
-        print critical_df.groupby("city").count().sort_values("critical")["critical"]
+        print critical_df.groupby("city").count().sort_values("critical", ascending=False)["critical"]
         print sum(self.flagged_df["critical"])
 
     def preprocesses_data(self, mode="evaluate"):
@@ -144,7 +142,7 @@ class StabilitasFinder(object):
             ]
         else:
             self.probas = [prob[1] for prob in
-                self.model.predict_proba
+                self.model.predict_proba(X)
         ]
 
         return self.probas
@@ -165,30 +163,25 @@ class StabilitasFinder(object):
         self.confusion_matrix = confusion_matrix(self.y_test, self.predicted)
         return self.predicted
 
-    def _critical_cities_by_day(self):
+    def _labeled_critical_cities_by_day(self):
         if (self.date_lookup == None) & (self.city_lookup == None):
             print "Needs lookup dicts from Filter Layer"
         else:
-            for city in self.city_lookup.keys():
-                try:
-                    series = self.city_lookup[city]["anomalies"]
-                except:
-                    continue
-                daily_anomalies = series.resample("d").sum()[self.start:self.end]
-                for day in daily_anomalies.index:
-                    if daily_anomalies[day] > 0:
-                        if len(self.date_lookup[day.date()]) == 0:
+            for city in self.flagged_df["city"].unique:
+                city_df = self.flagged_df[self.flagged_df["city"] == city]
+                series = pd.Series(
+                    city_df["critical"],
+                    index=city_df["start_ts"]
+                )
+                daily_critical = series.resample("d").sum()
+                for day in daily_critical.index:
+                    if daily_critical[day] > 0:
+                        if len(self.date_lookup[day.date()]) == 1:
                             self.date_lookup[day.date()].append([city])
                         else:
-                            self.date_lookup[day.date()][0].append(city)
+                            self.date_lookup[day.date()][1].append(city)
 
     def _predicted_critical_cities_by_day(self):
-        if (self.date_lookup == None) & (self.city_lookup == None):
-            print "Needs lookup dicts from Filter Layer"
-        else:
-            pass
-
-    def _labeled_critical_cities_by_day(self):
         if (self.date_lookup == None) & (self.city_lookup == None):
             print "Needs lookup dicts from Filter Layer"
         else:
