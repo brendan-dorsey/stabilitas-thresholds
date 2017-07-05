@@ -29,7 +29,8 @@ def main():
     )
 
     # These settings return 8.4% of reports as anomalous out of the sample data
-    # Layer completes in about 330 seconds for 92884 reports, with haversine
+    # Layer completes in about 330 seconds for 92884 reports.
+    # This includes haversine calculations for each city/report combination.
     # Layer can complete ~280 reports per second
 
     anomalies_df = filter_layer.get_anomaly_reports(write_to_file=True)
@@ -42,23 +43,19 @@ def main():
                                     finish-start
                                 )
 
+    ########################################
+    ########################################
+    ##                                    ##
+    ##  This code will take lat/longs and ##
+    ##   plot them as if on a map         ##
+    ##                                    ##
+    ########################################
+    ########################################
+
     # lats, longs = filter_layer.get_anomaly_locations("2016-12-25")
     # print "Number of elevated cities: ", len(lats)
     # plt.scatter(longs, lats)
     # plt.show()
-
-    # plt.scatter(
-    #     filter_layer.cities_anomalies["Berlin"].index,
-    #     filter_layer.cities_anomalies["Berlin"].values
-    # )
-    # plt.xlim("2016-12-12", "2016-12-27")
-    # plt.show()
-
-    # anomaly_counts = [len(cities) for cities in
-    #                   filter_layer.date_dictionary.values()]
-    # plt.bar(filter_layer.date_dictionary.keys(), anomaly_counts, width=1)
-    # plt.show()
-
 
 
 if __name__ == '__main__':

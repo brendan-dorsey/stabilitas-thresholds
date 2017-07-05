@@ -17,30 +17,44 @@ def main():
 
     finder.label_critical_reports()
 
-    # cutoffs = [10, 20, 30, 40, 50]
-    # for cutoff in cutoffs:
-    #     finder.label_critical_reports(cutoff)
+    finder.fit(mode="evaluate")
+    finder.predict()
+
+    conf_mat = finder.confusion_matrix
+    # Transpoition of sklearn confusion matrix to my preferred format:
+    # TP  FN
+    # FP  TN
+    conf_mat = [[conf_mat[1][1], conf_mat[1][0]], [conf_mat[0][1], conf_mat[0][0]]]
+
+    for row in conf_mat:
+        print row
+
+    ########################################
+    ########################################
+    ##                                    ##
+    ##  The code below is for generating  ##
+    ##  a ROC curve and determining an    ##
+    ##  optimal decision threshold.       ##
+    ##                                    ##
+    ########################################
+    ########################################
 
     # runs = []
     # for _ in range(1000):
-
-    finder.fit()
-    finder.predict_proba()
-
-    thresholds = np.linspace(0, 1, 101)
+    # thresholds = np.linspace(0, 1, 101)
     # thresholds = [0.36, 0.37, 0.38]
-    false_positive_rates = []
-    true_positive_rates = []
-    for threshold in thresholds:
-        conf_mat = finder.predict(threshold=threshold)
-        fpr = float(conf_mat[0][1]) / (conf_mat[0][1] + (conf_mat[0][0]) + 1)
-        tpr = float(conf_mat[1][1]) / (conf_mat[1][1] + (conf_mat[1][0]) + 1)
-
-        false_positive_rates.append(fpr)
-        true_positive_rates.append(tpr)
-
-    iteration = zip(thresholds, true_positive_rates, false_positive_rates)
-    print iteration
+    # false_positive_rates = []
+    # true_positive_rates = []
+    # for threshold in thresholds:
+    #     conf_mat = finder.predict(threshold=threshold)
+    #     fpr = float(conf_mat[0][1]) / (conf_mat[0][1] + (conf_mat[0][0]) + 1)
+    #     tpr = float(conf_mat[1][1]) / (conf_mat[1][1] + (conf_mat[1][0]) + 1)
+    #
+    #     false_positive_rates.append(fpr)
+    #     true_positive_rates.append(tpr)
+    #
+    # iteration = zip(thresholds, true_positive_rates, false_positive_rates)
+    # print iteration
 
     # runs.append(iteration)
     # low, low_tpr, low_fpr, med, med_tpr, med_fpr, hi, hi_tpr, hi_fpr =\

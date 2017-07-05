@@ -7,11 +7,12 @@ from sklearn.metrics import confusion_matrix
 
 
 class StabilitasFinder(object):
-    def __init__(self, date_lookup=None, city_lookup=None):
+    def __init__(self):
         """
         Inputs:
             Date lookup dictionary from StabilitasFilter
             City lookup dictionary from StabilitasFilter
+            Anomalous Reports DataFrame from StabiltiasFilter
         Outputs:
             Compelted Date and City lookup dictionaries.
             {date:
@@ -29,16 +30,40 @@ class StabilitasFinder(object):
                     [critical_reports]
                 }
             }
+
+        Workflow:
+            Instantiate StabilitasFinder
+            Load data from StabilitasFilter by calling load_data(**kwargs)
+            If evaluating or training, label critical reports by calling
+                label_critical_reports(cutoff)
+            Fit model to training data
+        """
+
+
+    def load_data(self,
+        filename=None,
+        dataframe=None,
+        date_lookup=None,
+        city_lookup=None
+    ):
+        """
+        Method to load data into Finder Layer. Looks for a file first, then
+        a dataframe. Data must be passed from StabilitasFilter.
         """
         self.date_lookup = date_lookup
         self.city_lookup = city_lookup
 
-    def load_data(self, filename):
-        df = pd.read_csv(filename)
-        df = df.reset_index()
-        df["start_ts"] = pd.to_datetime(df["start_ts"])
-        self.flagged_df = df.sort_values("start_ts")
-        # print self.flagged_df.info()
+        if filename != None:
+            df = pd.read_csv(filename)
+            df = df.reset_index()
+            df["start_ts"] = pd.to_datetime(df["start_ts"])
+            self.flagged_df = df.sort_values("start_ts")
+        elif dataframe != None:
+            df = dataframe.reset_index()
+            df["start_ts"] = pd.to_datetime(df["start_ts"])
+            self.flagged_df = df.sort_values("start_ts")
+        else:
+            print "Must load either a file or a dataframe from StabilitasFilter"
 
     def label_critical_reports(self, cutoff=30):
         self.flagged_df["critical"] = np.zeros(len(self.flagged_df))
@@ -50,8 +75,6 @@ class StabilitasFinder(object):
 
             next_day = pd.Timedelta(days=1)
 
-            # print city_df.index
-            # break
             for row in city_df.iterrows():
                 index = row[1][0]
 
@@ -61,40 +84,70 @@ class StabilitasFinder(object):
                 future_reports = city_df[report_time:stop_time]
                 if len(future_reports) >= cutoff:
                     self.flagged_df.loc[index, "critical"] = 1
-        # print sum(self.flagged_df["critical"])
+
         critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
-        # print critical_df.groupby("city").count()["critical"]
+        print critical_df.groupby("city").count().sort_values("critical")["critical"]
         print sum(self.flagged_df["critical"])
 
-    def preprocesses_data(self):
+    def preprocesses_data(self, mode="evaluate"):
         """
-        Tokenize, lemmatize (or stem), vecotrize
+        Tokenize, stem, and vecotrize report title text. Store "critical" label
+        as target value for evaulation.
+
+        kwargs:
+        mode - str, "evaluate", "train" or "predict", default: "evaluate"
+            Use "evaluate" for a train/test split when evalutating the model
+            Use "train" to train the model on a complete dataset
+            Use "predict" to use the model on a live dataset
         """
         X = self.flagged_df["title"]
         y = self.flagged_df["critical"]
-        X_train, X_test, self.y_train, self.y_test = train_test_split(X, y)
-
         self.vectorizer = TfidfVectorizer(analyzer="word", stop_words="english")
-        self.X_train = self.vectorizer.fit_transform(X_train)
-        self.X_test = self.vectorizer.transform(X_test)
+
+        if mode == "evaluate":
+            X_train, X_test, self.y_train, self.y_test = train_test_split(X, y)
+            self.X_train = self.vectorizer.fit_transform(X_train)
+            self.X_test = self.vectorizer.transform(X_test)
+        elif mode == "train":
+            self.X_train = self.vectorizer.fit_transform(X)
+            self.y_train = y
+        elif mode == "predict":
+            self.X_train = None
+            self.y_train = None
+            self.X_test = self.vectotizer.transform(X)
+            self.y_test = y
 
 
-    def fit(self):
+    def fit(self, mode="evaluate"):
         """
-        Use SKLearn Multinomial Naive Bayes
+        Preprocess date using TF-IDF Vecotrization.  Fit an SKLearn Multinomial
+        Naive Bayes classifier to the training data provided.
+
+        kwargs:
+        mode - str, "evaluate", "train" or "predict", default: "evaluate"
+            Use "evaluate" for a train/test split when evalutating the model
+            Use "train" to train the model on a complete dataset
+            Use "predict" to use the model on a live dataset
         """
-        self.preprocesses_data()
+        self.preprocesses_data(mode)
         self.model = MultinomialNB()
         self.model.fit(self.X_train, self.y_train)
 
-    def predict_proba(self):
+    def predict_proba(self, X=None):
         """
         Predict probability that a given report is critical, from MultinomialNB
         model.
         """
-        self.probas = [prob[1] for prob in self.model.predict_proba(self.X_test)]
+        if X == None:
+            self.probas = [prob[1] for prob in
+                self.model.predict_proba(self.X_test)
+            ]
+        else:
+            self.probas = [prob[1] for prob in
+                self.model.predict_proba
+        ]
 
-        # print self.probas
+        return self.probas
 
 
     def predict(self, X=None, y=None, threshold=0.37):
@@ -105,10 +158,41 @@ class StabilitasFinder(object):
         From initial testing, a threshold of 0.37 yields a true positive rate of
         0.802 and a false positive rate of 0.213.
         """
+        self.predict_proba(X)
+
         self.predicted = [1 if prob > threshold else 0 for prob in self.probas]
 
-        self.confusion_matrix(self.y_test, self.predicted)
+        self.confusion_matrix = confusion_matrix(self.y_test, self.predicted)
         return self.predicted
+
+    def _critical_cities_by_day(self):
+        if (self.date_lookup == None) & (self.city_lookup == None):
+            print "Needs lookup dicts from Filter Layer"
+        else:
+            for city in self.city_lookup.keys():
+                try:
+                    series = self.city_lookup[city]["anomalies"]
+                except:
+                    continue
+                daily_anomalies = series.resample("d").sum()[self.start:self.end]
+                for day in daily_anomalies.index:
+                    if daily_anomalies[day] > 0:
+                        if len(self.date_lookup[day.date()]) == 0:
+                            self.date_lookup[day.date()].append([city])
+                        else:
+                            self.date_lookup[day.date()][0].append(city)
+
+    def _predicted_critical_cities_by_day(self):
+        if (self.date_lookup == None) & (self.city_lookup == None):
+            print "Needs lookup dicts from Filter Layer"
+        else:
+            pass
+
+    def _labeled_critical_cities_by_day(self):
+        if (self.date_lookup == None) & (self.city_lookup == None):
+            print "Needs lookup dicts from Filter Layer"
+        else:
+            pass
 
     def get_critical_cities(self):
         pass
