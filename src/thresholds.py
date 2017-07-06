@@ -22,8 +22,8 @@ def main():
     data_filename = "data/reports_12DEC16-26DEC16.tsv"
     filter_layer.fit(
         data_filename,
-        start_datetime="2016-12-20",
-        end_datetime="2016-12-21",
+        start_datetime="2016-12-12",
+        end_datetime="2016-12-26",
         resample_size=3,
         window_size="1w",
         anomaly_threshold=1,
