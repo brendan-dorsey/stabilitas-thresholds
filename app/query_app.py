@@ -32,7 +32,7 @@ def query():
 
 @app.route("/map_query", methods=["GET", "POST"])
 def map():
-    return render_template("map_query.html"), 200
+    return render_template("basic_map.html"), 200
 
 
 if __name__ == '__main__':

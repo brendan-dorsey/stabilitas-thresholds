@@ -423,6 +423,7 @@ class StabilitasFilter(object):
         start = time.time()
         self.reports_df["anomalous"] = np.zeros(len(self.reports_df))
         time_delta = pd.Timedelta(minutes=self.resample_size)
+
         for city in self.city_lookup.keys():
             try:
                 anomalies = self.city_lookup[city]["anomalies"]
