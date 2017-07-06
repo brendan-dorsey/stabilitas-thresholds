@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import time
 from datetime import datetime
+import json
 plt.style.use("ggplot")
 
 
@@ -82,6 +83,9 @@ def main():
                                     datetime.now().time(),
                                     finder_finish-filter_start
     )
+
+    with open("app/date_lookup.json", mode="w") as f:
+        json.dump(finder_layer.date_lookup, f)
 
 
 

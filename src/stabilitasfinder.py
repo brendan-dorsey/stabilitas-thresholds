@@ -65,8 +65,6 @@ class StabilitasFinder(object):
 
         self.flagged_df.reset_index(drop=True, inplace=True)
         self.flagged_df["index_copy"] = np.arange(len(self.flagged_df))
-        # print self.flagged_df.columns
-        # print self.flagged_df.head()
 
     def label_critical_reports(self, cutoff=30):
         self.flagged_df["critical"] = np.zeros(len(self.flagged_df))
@@ -76,31 +74,17 @@ class StabilitasFinder(object):
 
             city_df = self.flagged_df[self.flagged_df["city"] == city]
             city_df = city_df.set_index("start_ts")
-            # print city_df.head()
-            # break
 
             for row in city_df.iterrows():
-                # print row
-                # break
                 index = row[1][-2]
-                # print index
-                # bad_index = []
-                # print index in self.flagged_df.index
-                # if index not in self.flagged_df.index:
-                #     bad_index.append(row)
 
                 report_time = row[0]
                 stop_time = report_time + next_day
 
                 future_reports = city_df[report_time:stop_time]
                 if len(future_reports) >= cutoff:
-                    # print self.flagged_df.loc[index, "critical"]
-                    # break
                     self.flagged_df.loc[index, "critical"] = 1
-                    # print self.flagged_df.loc[index, :]
 
-        # print bad_index
-        # return ""
         critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
         print "Critical cities by number of critical reports:"
         print critical_df.groupby("city").count().sort_values("critical", ascending=False)["critical"]
@@ -195,12 +179,9 @@ class StabilitasFinder(object):
                     copy=True
                 )
                 daily_critical = series.resample("d").count()
-                # print "critical", daily_critical
                 for day in daily_critical.index:
                     key = str(day.date())
-                    # print "foo", daily_critical[day] > 0.0, daily_critical[day], type(daily_critical[day])
                     if daily_critical[day] > 0.0:
-                        # print self.date_lookup[key]
                         if len(self.date_lookup[key]) == 1:
                             self.date_lookup[key].append([city])
                         else:
