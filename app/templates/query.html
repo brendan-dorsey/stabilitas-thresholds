@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+  <html>
+      <head>
+          <meta charset="utf-8">
+          <title>Stabilitas Thresholds v1.0</title>
+
+          <!-- Latest compiled and minified CSS -->
+          <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+          <!-- Optional theme -->
+          <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+      </head>
+      <body>
+          <h2>Cities with critical risk levels on {{query_date}}:</h2>
+          <table class="table table-striped">
+            <tr>
+              <th>City</th>
+              <th>Location</th>
+            </tr>
+            {% for city, location in critical_cities %}
+            <tr>
+              <td>{{city}}</td>
+              <td>{{location}}</td>
+            </tr>
+            {% endfor %}
+          </table>
+          <h2>Cities with elevated risk levels on {{query_date}}:</h2>
+          <table class="table table-striped">
+            <tr>
+              <th>City</th>
+              <th>Location</th>
+            </tr>
+            {% for city, location in elevated_cities %}
+            <tr>
+              <td>{{city}}</td>
+              <td>{{location}}</td>
+            </tr>
+            {% endfor %}
+          </table>
+          <h3><a href={{root_link}}>Submit another query</a>!</h3>
+      </body>
+  </html>

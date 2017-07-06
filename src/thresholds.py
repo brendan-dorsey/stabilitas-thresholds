@@ -67,11 +67,11 @@ def main():
 
     finder_finish = time.time()
 
-    print finder_layer.date_lookup.keys()
-    print len(finder_layer.date_lookup["2016-12-20"])
-    print len(finder_layer.date_lookup["2016-12-20"][0])
-    print len(finder_layer.date_lookup["2016-12-20"][1])
-    print finder_layer.date_lookup["2016-12-20"][1]
+    # print finder_layer.date_lookup.keys()
+    # print len(finder_layer.date_lookup["2016-12-20"])
+    # print len(finder_layer.date_lookup["2016-12-20"][0])
+    # print len(finder_layer.date_lookup["2016-12-20"][1])
+    # print finder_layer.date_lookup["2016-12-20"][1]
 
     print ""
     print "Finder finished at {0} in {1} seconds.".format(
@@ -87,7 +87,13 @@ def main():
     with open("app/date_lookup.json", mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
-
+    truncated_city_lookup = {}
+    for city in finder_layer.city_lookup.keys():
+        truncated_city_lookup[city] = {
+            "location": finder_layer.city_lookup[city]["location"]
+        }
+    with open("app/city_lookup.json", mode="w") as f:
+        json.dump(truncated_city_lookup, f)
 
 
     ########################################

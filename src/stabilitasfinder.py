@@ -178,7 +178,7 @@ class StabilitasFinder(object):
                     index=city_df["start_ts"],
                     copy=True
                 )
-                daily_critical = series.resample("d").count()
+                daily_critical = series.resample("d").sum()
                 for day in daily_critical.index:
                     key = str(day.date())
                     if daily_critical[day] > 0.0:
