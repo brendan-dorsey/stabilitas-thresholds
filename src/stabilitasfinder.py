@@ -55,37 +55,57 @@ class StabilitasFinder(object):
 
         if isinstance(source, str):
             df = pd.read_csv(source)
-            df = df.reset_index()
             df["start_ts"] = pd.to_datetime(df["start_ts"])
             self.flagged_df = df.sort_values("start_ts")
+            self.flagged_df.drop("Unnamed: 0", axis=1, inplace=True)
         else:
-            df = source.reset_index()
+            df = source
             df["start_ts"] = pd.to_datetime(df["start_ts"])
             self.flagged_df = df.sort_values("start_ts")
 
+        self.flagged_df.reset_index(drop=True, inplace=True)
+        self.flagged_df["index_copy"] = np.arange(len(self.flagged_df))
+        # print self.flagged_df.columns
+        # print self.flagged_df.head()
+
     def label_critical_reports(self, cutoff=30):
         self.flagged_df["critical"] = np.zeros(len(self.flagged_df))
+        next_day = pd.Timedelta(days=1)
 
         for city in self.flagged_df["city"].unique():
 
             city_df = self.flagged_df[self.flagged_df["city"] == city]
             city_df = city_df.set_index("start_ts")
-
-            next_day = pd.Timedelta(days=1)
+            # print city_df.head()
+            # break
 
             for row in city_df.iterrows():
-                index = row[1][0]
+                # print row
+                # break
+                index = row[1][-2]
+                # print index
+                # bad_index = []
+                # print index in self.flagged_df.index
+                # if index not in self.flagged_df.index:
+                #     bad_index.append(row)
 
                 report_time = row[0]
                 stop_time = report_time + next_day
 
                 future_reports = city_df[report_time:stop_time]
                 if len(future_reports) >= cutoff:
+                    # print self.flagged_df.loc[index, "critical"]
+                    # break
                     self.flagged_df.loc[index, "critical"] = 1
+                    # print self.flagged_df.loc[index, :]
 
+        # print bad_index
+        # return ""
         critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
+        print "Critical cities by number of critical reports:"
         print critical_df.groupby("city").count().sort_values("critical", ascending=False)["critical"]
-        print sum(self.flagged_df["critical"])
+        print ""
+        print "Total critical reports: ", sum(self.flagged_df["critical"])
 
     def preprocesses_data(self, mode="evaluate"):
         """
@@ -164,22 +184,27 @@ class StabilitasFinder(object):
         return self.predicted
 
     def _labeled_critical_cities_by_day(self):
-        if (self.date_lookup == None) & (self.city_lookup == None):
+        if (self.date_lookup == None) | (self.city_lookup == None):
             print "Needs lookup dicts from Filter Layer"
         else:
-            for city in self.flagged_df["city"].unique:
+            for city in self.flagged_df["city"].unique():
                 city_df = self.flagged_df[self.flagged_df["city"] == city]
                 series = pd.Series(
-                    city_df["critical"],
-                    index=city_df["start_ts"]
+                    city_df["critical"].values,
+                    index=city_df["start_ts"],
+                    copy=True
                 )
-                daily_critical = series.resample("d").sum()
+                daily_critical = series.resample("d").count()
+                # print "critical", daily_critical
                 for day in daily_critical.index:
-                    if daily_critical[day] > 0:
-                        if len(self.date_lookup[day.date()]) == 1:
-                            self.date_lookup[day.date()].append([city])
+                    key = str(day.date())
+                    # print "foo", daily_critical[day] > 0.0, daily_critical[day], type(daily_critical[day])
+                    if daily_critical[day] > 0.0:
+                        # print self.date_lookup[key]
+                        if len(self.date_lookup[key]) == 1:
+                            self.date_lookup[key].append([city])
                         else:
-                            self.date_lookup[day.date()][1].append(city)
+                            self.date_lookup[key][1].append(city)
 
     def _predicted_critical_cities_by_day(self):
         if (self.date_lookup == None) & (self.city_lookup == None):

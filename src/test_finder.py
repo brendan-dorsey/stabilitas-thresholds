@@ -19,6 +19,8 @@ def main():
 
     finder.fit(mode="evaluate")
     finder.predict()
+    finder._labeled_critical_cities_by_day()
+
 
     conf_mat = finder.confusion_matrix
     # Transpoition of sklearn confusion matrix to my preferred format:

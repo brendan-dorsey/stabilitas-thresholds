@@ -379,11 +379,12 @@ class StabilitasFilter(object):
                 continue
             daily_anomalies = series.resample("d").sum()[self.start:self.end]
             for day in daily_anomalies.index:
+                key = str(day.date())
                 if daily_anomalies[day] > 0:
-                    if len(self.date_lookup[day.date()]) == 0:
-                        self.date_lookup[day.date()].append([city])
+                    if len(self.date_lookup[key]) == 0:
+                        self.date_lookup[key].append([city])
                     else:
-                        self.date_lookup[day.date()][0].append(city)
+                        self.date_lookup[key][0].append(city)
 
         finish = time.time()
         print "Anomalies grouped in {0} seconds.".format(finish-start)
