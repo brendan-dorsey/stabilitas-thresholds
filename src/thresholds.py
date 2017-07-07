@@ -59,8 +59,9 @@ def main():
 
     # For Evaluation and Training Modes, we need to label data
     finder_layer.label_critical_reports()
+    finder_layer.preprocesses_data(mode="evaluate")
 
-    finder_layer.fit(mode="evaluate")
+    finder_layer.fit()
     finder_layer.predict()
 
     finder_layer._labeled_critical_cities_by_day()

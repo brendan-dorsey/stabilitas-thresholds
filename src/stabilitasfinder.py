@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_predict, KFold
 from sklearn.metrics import confusion_matrix
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 
 
 class StabilitasFinder(object):
@@ -86,10 +87,10 @@ class StabilitasFinder(object):
                     self.flagged_df.loc[index, "critical"] = 1
 
         critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
-        print "Critical cities by number of critical reports:"
-        print critical_df.groupby("city").count().sort_values("critical", ascending=False)["critical"]
-        print ""
-        print "Total critical reports: ", sum(self.flagged_df["critical"])
+        # print "Critical cities by number of critical reports:"
+        # print critical_df.groupby("city").count().sort_values("critical", ascending=False)["critical"]
+        # print ""
+        # print "Total critical reports: ", sum(self.flagged_df["critical"])
 
     def preprocesses_data(self, mode="evaluate"):
         """
@@ -102,8 +103,8 @@ class StabilitasFinder(object):
             Use "train" to train the model on a complete dataset
             Use "predict" to use the model on a live dataset
         """
-        X = self.flagged_df["title"]
-        y = self.flagged_df["critical"]
+        X=self.flagged_df["title"]
+        y=self.flagged_df["critical"]
         self.vectorizer = TfidfVectorizer(analyzer="word", stop_words="english")
 
         if mode == "evaluate":
@@ -119,8 +120,7 @@ class StabilitasFinder(object):
             self.X_test = self.vectotizer.transform(X)
             self.y_test = y
 
-
-    def fit(self, mode="evaluate"):
+    def fit(self):
         """
         Preprocess date using TF-IDF Vecotrization.  Fit an SKLearn Multinomial
         Naive Bayes classifier to the training data provided.
@@ -131,7 +131,6 @@ class StabilitasFinder(object):
             Use "train" to train the model on a complete dataset
             Use "predict" to use the model on a live dataset
         """
-        self.preprocesses_data(mode)
         self.model = MultinomialNB()
         self.model.fit(self.X_train, self.y_train)
 
@@ -167,6 +166,43 @@ class StabilitasFinder(object):
         self.confusion_matrix = confusion_matrix(self.y_test, self.predicted)
         return self.predicted
 
+    def cross_val_predict(self, thresholds=[0.235], model_type="nb"):
+        """
+        Cross validate and predict across full dataset.
+        """
+        X = self.flagged_df["title"].values
+        y = self.flagged_df["critical"].values
+        vectorizer = TfidfVectorizer(analyzer="word", stop_words="english")
+        kf = KFold(n_splits=5, shuffle=False)
+        cv_probas = []
+
+        for train_index, test_index in kf.split(X):
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+            X_train = vectorizer.fit_transform(X_train)
+            X_test = vectorizer.transform(X_test)
+            if model_type == "nb":
+                model = MultinomialNB()
+            elif model_type == "gbc":
+                model = GradientBoostingClassifier(
+                    learning_rate=0.01,
+                    n_estimators=1000
+                )
+            elif model_type == "rfc":
+                model = RandomForestClassifier(
+                    n_estimators=1000,
+                    n_jobs=-1
+                )
+            model.fit(X_train, y_train)
+            probas = [prob[1] for prob in model.predict_proba(X_test.toarray())]
+            cv_probas.extend(probas)
+        for threshold in thresholds:
+            yield [1 if prob > threshold else 0 for prob in cv_probas]
+
+        # self.flagged_df["predicted"] = cv_predicted
+        # print sum(self.flagged_df["predicted"])
+        # print self.flagged_df["predicted"]
+
     def _labeled_critical_cities_by_day(self):
         if (self.date_lookup == None) | (self.city_lookup == None):
             print "Needs lookup dicts from Filter Layer"
@@ -181,17 +217,31 @@ class StabilitasFinder(object):
                 daily_critical = series.resample("d").sum()
                 for day in daily_critical.index:
                     key = str(day.date())
+                    if len(self.date_lookup[key]) == 1:
+                        self.date_lookup[key].append([])
                     if daily_critical[day] > 0.0:
-                        if len(self.date_lookup[key]) == 1:
-                            self.date_lookup[key].append([city])
-                        else:
-                            self.date_lookup[key][1].append(city)
+                        self.date_lookup[key][1].append(city)
 
     def _predicted_critical_cities_by_day(self):
-        if (self.date_lookup == None) & (self.city_lookup == None):
+        if (self.date_lookup == None) | (self.city_lookup == None):
             print "Needs lookup dicts from Filter Layer"
         else:
-            pass
+            for city in self.flagged_df["city"].unique():
+                city_df = self.flagged_df[self.flagged_df["city"] == city]
+                series = pd.Series(
+                    city_df["predicted"].values,
+                    index=city_df["start_ts"],
+                    copy=True
+                )
+                daily_predicted = series.resample("d").sum()
+                for day in daily_predicted.index:
+                    key = str(day.date())
+                    if len(self.date_lookup[key]) == 1:
+                        self.date_lookup[key].append([], [])
+                    elif len(self.date_lookup[key]) == 2:
+                        self.date_lookup[key].append([])
+                    if daily_predicted[day] > 0.0:
+                        self.date_lookup[key][2].append(city)
 
     def get_critical_cities(self):
         pass

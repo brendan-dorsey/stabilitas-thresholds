@@ -1,0 +1,40 @@
+Naive Bayes:
+    cutoff = 30
+    threshold = 0.235
+    tpr = .702
+    fpr = .495
+    precision = .444
+
+
+    cutoff = 20
+    threshold = 0.306
+    tpr = .746
+    fpr = .499
+    precision = .524
+
+
+    cutoff = 10
+    threshold = 0.5
+    tpr = .753
+    fpr = .489
+    precision = .659
+
+Gradient Boosting:
+    cutoff = 30
+    threshold = 0.194
+    tpr = .705
+    fpr = .420
+    precision = .486
+
+Random Forest:
+    cutoff = 30
+    threshold = 0.173
+    tpr = .795
+    fpr = .480
+    precision = .482
+
+    cutoff = 30
+    threshold = 0.235
+    tpr = .705
+    fpr = .371
+    precision = .517

@@ -16,8 +16,9 @@ def main():
     finder.load_data(source="data/flagged_reports.csv")
 
     finder.label_critical_reports()
+    finder.preprocesses_data(mode="evaluate")
 
-    finder.fit(mode="evaluate")
+    finder.fit()
     finder.predict()
     finder._labeled_critical_cities_by_day()
 
