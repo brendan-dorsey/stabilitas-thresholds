@@ -5,6 +5,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split, cross_val_predict, KFold
 from sklearn.metrics import confusion_matrix
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.svm import SVC
 
 
 class StabilitasFinder(object):
@@ -70,6 +71,7 @@ class StabilitasFinder(object):
     def label_critical_reports(self, cutoff=30):
         self.flagged_df["critical"] = np.zeros(len(self.flagged_df))
         next_day = pd.Timedelta(days=1)
+        titles = []
 
         for city in self.flagged_df["city"].unique():
 
@@ -77,6 +79,7 @@ class StabilitasFinder(object):
             city_df = city_df.set_index("start_ts")
 
             for row in city_df.iterrows():
+                titles.append(row[1][3])
                 index = row[1][-2]
 
                 report_time = row[0]
@@ -87,6 +90,7 @@ class StabilitasFinder(object):
                     self.flagged_df.loc[index, "critical"] = 1
 
         critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
+        critical_df["title"].to_csv("data/critical_titles.txt", sep=" ", mode="w")
         # print "Critical cities by number of critical reports:"
         # print critical_df.groupby("city").count().sort_values("critical", ascending=False)["critical"]
         # print ""
@@ -192,6 +196,11 @@ class StabilitasFinder(object):
                 model = RandomForestClassifier(
                     n_estimators=1000,
                     n_jobs=-1
+                )
+            elif model_type == "svm":
+                model = SVC(
+                    kernel="linear",
+                    probability=True,
                 )
             model.fit(X_train, y_train)
             probas = [prob[1] for prob in model.predict_proba(X_test.toarray())]

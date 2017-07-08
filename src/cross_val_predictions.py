@@ -19,7 +19,7 @@ def main():
 
 
     fig, ax = plt.subplots(1, figsize=(8,8))
-    cutoffs = [10, 20, 30]
+    cutoffs = [30]
     for i, cutoff in enumerate(cutoffs):
         finder = StabilitasFinder()
         finder.load_data(
@@ -46,12 +46,14 @@ def main():
         ########################################
 
 
+        # Various ranges of thresholds used in cross validation.
         thresholds = np.linspace(0, 1, 99)
         # thresholds = [0.22, 0.225, 0.23, 0.235, 0.24]
         # thresholds = [0.235]
         # thresholds = [0.45, 0.47, 0.49, 0.51, 0.53, 0.55]
 
-        models = ["nb", "gbc", "rfc"]
+        # models = ["nb", "gbc", "rfc"]
+        models = ["gbc", "rfc", "svm"]
         for model in models:
             false_positive_rates = []
             true_positive_rates = []
@@ -59,11 +61,13 @@ def main():
 
             for i, predicted in enumerate(finder.cross_val_predict(thresholds=thresholds, model_type=model)):
                 conf_mat = confusion_matrix(y_true, predicted)
-                # Transpoition of sklearn confusion matrix to my preferred format:
+                # Transpoition of sklearn confusion matrix to this format:
                 # TP  FN
                 # FP  TN
                 conf_mat = [[conf_mat[1][1], conf_mat[1][0]], [conf_mat[0][1], conf_mat[0][0]]]
+                # True Positive Rate: TP / TP + FN
                 tpr = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[0][1] + 1)
+                # False Positive Rate: FP / FP + TN
                 fpr = float(conf_mat[1][0]) / (conf_mat[1][0] + conf_mat[1][1] + 1)
                 precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0] + 1)
                 false_positive_rates.append(fpr)
@@ -87,6 +91,8 @@ def main():
                 label="ROC {0}, cutoff: {1}, area: {2:0.2f}".format(model, cutoff, area)
             )
     ax.plot([0,1], [0, 1], linestyle="--", color="k")
+    ax.plot([0.3,0.3], [0.7, 1], color="g", alpha=0.3)
+    ax.plot([0,0.3], [0.7, 0.7], color="g", alpha=0.3)
     ax.scatter(0.2, 0.8, color="k", label="goal")
 
     ax.set_xlabel("False Positive Rate")

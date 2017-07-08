@@ -199,19 +199,6 @@ class StabilitasFilter(object):
         print "        Processing data..."
         start = time.time()
 
-        def severity_score_quadratic(severity_rating):
-            if severity_rating == "low":
-                return 1
-            elif severity_rating == "moderate":
-                return 4
-            elif severity_rating == "medium":
-                return 9
-            elif severity_rating == "high":
-                return 16
-            elif severity_rating == "extreme":
-                return 25
-            else:
-                return 4
 
         target_columns = [
             "lat",
@@ -448,3 +435,18 @@ class StabilitasFilter(object):
             sum(self.reports_df["anomalous"]), finish-start
         )
         return anomalies_df
+
+
+def severity_score_quadratic(severity_rating):
+    if severity_rating == "low":
+        return 1
+    elif severity_rating == "moderate":
+        return 4
+    elif severity_rating == "medium":
+        return 9
+    elif severity_rating == "high":
+        return 16
+    elif severity_rating == "extreme":
+        return 25
+    else:
+        return 4
