@@ -70,7 +70,7 @@ def main():
                 true_positive_rates.append(tpr)
                 # for row in conf_mat:
                 #     print row
-                if (tpr > 0.7) & (fpr < 0.5):
+                if (tpr > 0.7) & (fpr < 0.4):
                     print "Model: ", model
                     print "Cutoff: ", cutoff
                     print "Threshold: ", thresholds[i]
@@ -84,7 +84,7 @@ def main():
             ax.plot(
                 false_positive_rates,
                 true_positive_rates,
-                label="ROC, model: {0} (area = {1:0.2f})".format(model, area)
+                label="ROC {0}, cutoff: {1}, area: {2:0.2f}".format(model, cutoff, area)
             )
     ax.plot([0,1], [0, 1], linestyle="--", color="k")
     ax.scatter(0.2, 0.8, color="k", label="goal")
