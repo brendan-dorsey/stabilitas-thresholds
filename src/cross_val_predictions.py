@@ -47,13 +47,14 @@ def main():
 
 
         # Various ranges of thresholds used in cross validation.
-        thresholds = np.linspace(0, 1, 99)
+        thresholds = np.linspace(0, 1, 500)
         # thresholds = [0.22, 0.225, 0.23, 0.235, 0.24]
         # thresholds = [0.235]
         # thresholds = [0.45, 0.47, 0.49, 0.51, 0.53, 0.55]
 
         # models = ["nb", "gbc", "rfc"]
-        models = ["gbc", "rfc", "svm"]
+        # models = ["gbc", "rfc", "svm"]
+        models = ["gbc", "rfc"]
         for model in models:
             false_positive_rates = []
             true_positive_rates = []
@@ -88,7 +89,7 @@ def main():
             ax.plot(
                 false_positive_rates,
                 true_positive_rates,
-                label="ROC {0}, cutoff: {1}, area: {2:0.2f}".format(model, cutoff, area)
+                label="ROC {0}, cutoff: {1}, area: {2:0.3f}".format(model, cutoff, area)
             )
     ax.plot([0,1], [0, 1], linestyle="--", color="k")
     ax.plot([0.3,0.3], [0.7, 1], color="g", alpha=0.3)

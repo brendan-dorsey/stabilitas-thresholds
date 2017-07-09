@@ -176,32 +176,35 @@ class StabilitasFinder(object):
         """
         X = self.flagged_df["title"].values
         y = self.flagged_df["critical"].values
-        vectorizer = TfidfVectorizer(analyzer="word", stop_words="english")
+        vectorizer = TfidfVectorizer(
+            analyzer="word",
+            stop_words="english",
+            max_features=2500
+        )
         kf = KFold(n_splits=5, shuffle=False)
         cv_probas = []
+        models = {
+            "nb": MultinomialNB(),
+            "gbc": GradientBoostingClassifier(
+                learning_rate=0.1,
+                n_estimators=100
+            ),
+            "rfc": RandomForestClassifier(
+                n_estimators=100,
+                n_jobs=-1
+            ),
+            "svm": SVC(
+                kernel="linear",
+                probability=True,
+            ),
+        }
 
         for train_index, test_index in kf.split(X):
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
             X_train = vectorizer.fit_transform(X_train)
             X_test = vectorizer.transform(X_test)
-            if model_type == "nb":
-                model = MultinomialNB()
-            elif model_type == "gbc":
-                model = GradientBoostingClassifier(
-                    learning_rate=0.01,
-                    n_estimators=1000
-                )
-            elif model_type == "rfc":
-                model = RandomForestClassifier(
-                    n_estimators=1000,
-                    n_jobs=-1
-                )
-            elif model_type == "svm":
-                model = SVC(
-                    kernel="linear",
-                    probability=True,
-                )
+            model = models[model_type]
             model.fit(X_train, y_train)
             probas = [prob[1] for prob in model.predict_proba(X_test.toarray())]
             cv_probas.extend(probas)
@@ -211,6 +214,11 @@ class StabilitasFinder(object):
         # self.flagged_df["predicted"] = cv_predicted
         # print sum(self.flagged_df["predicted"])
         # print self.flagged_df["predicted"]
+
+    def _cross_val_nb(self, X_train, X_test, y_train):
+        model = MultinomialNB()
+        model.fit(X_train, y_train)
+        probas = [prob[1] for prob in model.predict_proba(X_test.toarray())]
 
     def _labeled_critical_cities_by_day(self):
         if (self.date_lookup == None) | (self.city_lookup == None):
