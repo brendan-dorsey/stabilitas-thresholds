@@ -19,28 +19,23 @@ def main():
 
 
     fig, ax = plt.subplots(1, figsize=(8,8))
-    cutoffs = [30]
-    for i, cutoff in enumerate(cutoffs):
+    cutoffs = [10]
+    for cutoff in cutoffs:
         finder = StabilitasFinder()
         finder.load_data(
-            source="data/flagged_reports.csv",
+            source="data/flagged_reports_quad_2std.csv",
             date_lookup=date_lookup,
             city_lookup=city_lookup
         )
         finder.label_critical_reports(cutoff)
         finder._labeled_critical_cities_by_day()
 
-        # finder.cross_val_predict()
-        # finder._predicted_critical_cities_by_day()
-        # with open("app/cv_date_lookup.json", "w") as f:
-        #     json.dump(finder.date_lookup, f)
-
         ########################################
         ########################################
         ##                                    ##
         ##  The code below is for generating  ##
         ##  a ROC curve and determining an    ##
-        ##  optimal decision threshold (0.235)##
+        ##  optimal decision threshold        ##
         ##                                    ##
         ########################################
         ########################################
@@ -118,7 +113,7 @@ def main():
     ax.set_ylabel("True Positive Rate")
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    ax.set_title("Cross-Validated ROC Curve")
+    ax.set_title("ROC Curve score: Quad thresh: 2STD cutoff: 10")
     plt.legend(loc="lower right")
     plt.show()
 

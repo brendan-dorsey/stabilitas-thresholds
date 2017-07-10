@@ -462,14 +462,6 @@ class StabilitasFilter(object):
                         idx[window_start:timestamp, city, :],
                         idx["anomalous"]
                     ] = 1
-
-
-                        #
-                        # ((self.reports_df["city"] == city) &
-                        # (self.reports_df["start_ts"] >= timestamp - time_delta) &
-                        # (self.reports_df["start_ts"] <= timestamp)),
-                        # "anomalous"
-                        # ] = 1
             except:
                 continue
 

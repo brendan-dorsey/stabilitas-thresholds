@@ -52,6 +52,7 @@ class StabilitasFinder(object):
         Method to load data into Finder Layer. Data must be passed from
         StabilitasFilter as either a file or pandas DataFrame.
         """
+        print "Loading data for Finder..."
         self.date_lookup = date_lookup
         self.city_lookup = city_lookup
 
@@ -59,7 +60,10 @@ class StabilitasFinder(object):
             df = pd.read_csv(source)
             df["start_ts"] = pd.to_datetime(df["start_ts"])
             self.flagged_df = df.sort_values("start_ts")
-            self.flagged_df.drop("Unnamed: 0", axis=1, inplace=True)
+            try:
+                self.flagged_df.drop("Unnamed: 0", axis=1, inplace=True)
+            except:
+                pass
         else:
             df = source
             df["start_ts"] = pd.to_datetime(df["start_ts"])
@@ -69,6 +73,7 @@ class StabilitasFinder(object):
         self.flagged_df["index_copy"] = np.arange(len(self.flagged_df))
 
     def label_critical_reports(self, cutoff=30):
+        print "Labelling critical reports..."
         self.flagged_df["critical"] = np.zeros(len(self.flagged_df))
         next_day = pd.Timedelta(days=1)
         titles = []
@@ -107,6 +112,7 @@ class StabilitasFinder(object):
             Use "train" to train the model on a complete dataset
             Use "predict" to use the model on a live dataset
         """
+        print "Preprocessing data..."
         X=self.flagged_df["title"]
         y=self.flagged_df["critical"]
         self.vectorizer = TfidfVectorizer(analyzer="word", stop_words="english")
@@ -170,10 +176,11 @@ class StabilitasFinder(object):
         self.confusion_matrix = confusion_matrix(self.y_test, self.predicted)
         return self.predicted
 
-    def cross_val_predict(self, thresholds=[0.235], model_type="nb"):
+    def cross_val_predict(self, thresholds=[0.245], model_type="rfc"):
         """
         Cross validate and predict across full dataset.
         """
+        print "Generating cross-validated predictions..."
         X = self.flagged_df["title"].values
         y = self.flagged_df["critical"].values
         vectorizer = TfidfVectorizer(
@@ -183,6 +190,7 @@ class StabilitasFinder(object):
         )
         kf = KFold(n_splits=5, shuffle=False)
         cv_probas = []
+        cv_predicted = []
         models = {
             "nb": MultinomialNB(),
             "gbc": GradientBoostingClassifier(
@@ -218,11 +226,15 @@ class StabilitasFinder(object):
             probas = [prob[1] for prob in model.predict_proba(X_test.toarray())]
             cv_probas.extend(probas)
         for threshold in thresholds:
-            yield [1 if prob > threshold else 0 for prob in cv_probas]
+            predictions = [1 if prob > threshold else 0 for prob in cv_probas]
+            cv_predicted.append(predictions)
 
-        # self.flagged_df["predicted"] = cv_predicted
+        if len(cv_predicted) == 1:
+            self.flagged_df["predicted"] = cv_predicted[0]
+
         # print sum(self.flagged_df["predicted"])
         # print self.flagged_df["predicted"]
+        return cv_predicted
 
     def _cross_val_nb(self, X_train, X_test, y_train):
         model = MultinomialNB()
@@ -254,6 +266,8 @@ class StabilitasFinder(object):
         else:
             for city in self.flagged_df["city"].unique():
                 city_df = self.flagged_df[self.flagged_df["city"] == city]
+                # print city_df.head()
+                # exit()
                 series = pd.Series(
                     city_df["predicted"].values,
                     index=city_df["start_ts"],

@@ -32,15 +32,7 @@ def main():
         save_labels=False
     )
 
-    # These settings return 8.4% of reports as anomalous out of the sample data
-    # Layer completes in about 330 seconds for 92884 reports.
-    # This includes haversine calculations for each city/report combination.
-    # Layer can complete ~280 reports per second
-
-    anomalies_df = filter_layer.get_anomaly_reports(write_to_file=False)
-    # print anomalies_df.info()
-    # print anomalies_df.describe()
-    # return ""
+    # anomalies_df = filter_layer.get_anomaly_reports(write_to_file=False)
     date_lookup = filter_layer.date_lookup
     city_lookup = filter_layer.city_lookup
 
@@ -53,19 +45,22 @@ def main():
     finder_start = time.time()
     finder_layer = StabilitasFinder()
     finder_layer.load_data(
-        source=anomalies_df,
+        source="data/flagged_reports_quad_1std.csv",
         date_lookup=date_lookup,
         city_lookup=city_lookup
     )
 
-    # For Evaluation and Training Modes, we need to label data
+
     finder_layer.label_critical_reports()
-    finder_layer.preprocesses_data(mode="evaluate")
+    # finder_layer.preprocesses_data(mode="evaluate")
 
-    finder_layer.fit()
-    finder_layer.predict()
+    # finder_layer.fit()
+    # finder_layer.predict()
 
+    finder_layer.cross_val_predict(thresholds=[0.245], model_type="rfc")
+    # exit()
     finder_layer._labeled_critical_cities_by_day()
+    finder_layer._predicted_critical_cities_by_day()
 
     finder_finish = time.time()
 
