@@ -190,8 +190,12 @@ class StabilitasFinder(object):
                 n_estimators=100
             ),
             "rfc": RandomForestClassifier(
-                n_estimators=100,
-                n_jobs=-1
+                n_estimators=2000,
+                n_jobs=-1,
+                max_depth=None,
+                min_samples_split=2200,
+                min_samples_leaf=2,
+                max_features="sqrt"
             ),
             "svm": SVC(
                 kernel="linear",

@@ -1,0 +1,115 @@
+from stabilitasfinder import StabilitasFinder
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import time
+from datetime import datetime
+from sklearn.metrics import auc, confusion_matrix, f1_score, roc_auc_score
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import Pipeline
+import json
+plt.style.use("ggplot")
+
+
+def main():
+    finder = StabilitasFinder()
+    finder.load_data(source="data/flagged_reports.csv",)
+    finder.label_critical_reports(cutoff=30)
+    X = finder.flagged_df["title"].values
+    y = finder.flagged_df["critical"].values
+
+    pipe = Pipeline([
+        ("vectorizer", TfidfVectorizer()),
+        ("classifier", RandomForestClassifier())
+    ])
+
+    # param_grid1 = {
+    #     "vectorizer__analyzer": ["word"],
+    #     "vectorizer__stop_words": ["english"],
+    #     "vectorizer__max_features": [300, 500, 800, 2500],
+    #     "classifier__n_estimators": [100],
+    #     "classifier__max_depth": [1, 5, 9, 13, None],
+    #     "classifier__min_samples_split": [2, 100, 1000, 2000],
+    #     "classifier__min_samples_leaf": [1, 35, 70],
+    #     "classifier__max_features": ["sqrt", "log2", None],
+    #     "classifier__n_jobs": [-1]
+    # }
+    # grid1 = GridSearchCV(
+    #     estimator=pipe,
+    #     cv=5,
+    #     n_jobs=-1,
+    #     param_grid=param_grid1,
+    #     scoring = "roc_auc",
+    #     refit=False
+    # )
+    #
+    # grid1.fit(X, y)
+    #
+    # print "Best AUC: ", grid1.best_score_
+    # print "Best params: ", grid1.best_params_
+
+    # mean_scores = np.array(grid1.cv_results_["mean_test_score"])
+    # fig, ax =plt.subplots(1, figsize=(8,8))
+    # ax.plot(mean_scores, label="AUC scores")
+    # plt.show()
+
+    # Grid 1 Results:
+
+    # Best AUC:  0.792678915537
+    # Best params:  {
+    #     'vectorizer__stop_words': 'english',
+    #     'vectorizer__analyzer': 'word',
+    #     'vectorizer__max_features': 2500,
+    #     'classifier__n_estimators': 100,
+    #     'classifier__max_depth': None
+    #     'classifier__min_samples_split': 2000,
+    #     'classifier__min_samples_leaf': 1,
+    #     'classifier__max_features': 'sqrt',
+    #     'classifier__n_jobs': -1,
+    # }
+
+    param_grid2 = {
+        "vectorizer__analyzer": ["word"],
+        "vectorizer__stop_words": ["english"],
+        "vectorizer__max_features": [2500],
+        "classifier__n_estimators": [100],
+        "classifier__max_depth": [None],
+        "classifier__min_samples_split": [2000, 2100, 2200, 2300, 2400, 2500],
+        "classifier__min_samples_leaf": [1, 2, 3, 4, 5],
+        "classifier__max_features": ["sqrt"],
+        "classifier__n_jobs": [-1]
+    }
+    grid2 = GridSearchCV(
+        estimator=pipe,
+        cv=5,
+        n_jobs=-1,
+        param_grid=param_grid2,
+        scoring = "roc_auc",
+        refit=False
+    )
+
+    grid2.fit(X, y)
+
+    print "Best AUC: ", grid2.best_score_
+    print "Best params: ", grid2.best_params_
+
+    # Grid 2 Results:
+
+    # Best AUC:  0.791779190603
+    # Best params:  {
+    #     'vectorizer__analyzer': 'word',
+    #     'vectorizer__stop_words': 'english',
+    #     'vectorizer__max_features': 2500,
+    #     'classifier__n_estimators': 100,
+    #     'classifier__max_depth': None
+    #     'classifier__min_samples_split': 2200,
+    #     'classifier__min_samples_leaf': 2,
+    #     'classifier__max_features': 'sqrt',
+    #     'classifier__n_jobs': -1,
+    # }
+
+
+if __name__ == '__main__':
+    main()

@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import time
 from datetime import datetime
-from sklearn.metrics import auc, confusion_matrix
+from sklearn.metrics import auc, confusion_matrix, f1_score
 import json
 plt.style.use("ggplot")
 
@@ -23,9 +23,9 @@ def main():
     for i, cutoff in enumerate(cutoffs):
         finder = StabilitasFinder()
         finder.load_data(
-        source="data/flagged_reports.csv",
-        date_lookup=date_lookup,
-        city_lookup=city_lookup
+            source="data/flagged_reports.csv",
+            date_lookup=date_lookup,
+            city_lookup=city_lookup
         )
         finder.label_critical_reports(cutoff)
         finder._labeled_critical_cities_by_day()
@@ -58,9 +58,14 @@ def main():
         for model in models:
             false_positive_rates = []
             true_positive_rates = []
+            f1_scores = []
             y_true = finder.flagged_df["critical"].values
+            predictions = finder.cross_val_predict(
+                            thresholds=thresholds,
+                            model_type=model
+                        )
 
-            for i, predicted in enumerate(finder.cross_val_predict(thresholds=thresholds, model_type=model)):
+            for i, predicted in enumerate(predictions):
                 conf_mat = confusion_matrix(y_true, predicted)
                 # Transpoition of sklearn confusion matrix to this format:
                 # TP  FN
@@ -71,17 +76,23 @@ def main():
                 # False Positive Rate: FP / FP + TN
                 fpr = float(conf_mat[1][0]) / (conf_mat[1][0] + conf_mat[1][1] + 1)
                 precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0] + 1)
+                if (precision + tpr) == 0:
+                    f1 = 0
+                else:
+                    f1 = 2 * (precision * tpr) / (precision + tpr)
+                f1_scores.append(f1)
                 false_positive_rates.append(fpr)
                 true_positive_rates.append(tpr)
                 # for row in conf_mat:
                 #     print row
-                if (tpr > 0.7) & (fpr < 0.4):
+                if (tpr > 0.7) & (fpr < 0.35):
                     print "Model: ", model
                     print "Cutoff: ", cutoff
                     print "Threshold: ", thresholds[i]
                     print "TPR/Recall: ", tpr
                     print "FPR: ", fpr
                     print "Precision: ", precision
+                    print "F1 score: ", f1
                     print ""
 
             area = auc(false_positive_rates, true_positive_rates)
@@ -91,6 +102,13 @@ def main():
                 true_positive_rates,
                 label="ROC {0}, cutoff: {1}, area: {2:0.3f}".format(model, cutoff, area)
             )
+            ax.plot(
+                thresholds,
+                f1_scores,
+                label="F1 Scores for {}".format(model),
+                linestyle=":",
+                alpha=0.5
+                )
     ax.plot([0,1], [0, 1], linestyle="--", color="k")
     ax.plot([0.3,0.3], [0.7, 1], color="g", alpha=0.3)
     ax.plot([0,0.3], [0.7, 0.7], color="g", alpha=0.3)
