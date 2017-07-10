@@ -186,8 +186,13 @@ class StabilitasFinder(object):
         models = {
             "nb": MultinomialNB(),
             "gbc": GradientBoostingClassifier(
-                learning_rate=0.1,
-                n_estimators=100
+                learning_rate=0.005,
+                n_estimators=2000,
+                max_depth=13,
+                min_samples_split=8,
+                min_samples_leaf=1,
+                max_features="sqrt",
+                subsample=0.5
             ),
             "rfc": RandomForestClassifier(
                 n_estimators=2000,
