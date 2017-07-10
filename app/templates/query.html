@@ -12,7 +12,7 @@
 
       </head>
       <body>
-          <h2>Cities flagged as critical on {{query_date}}:</h2>
+          <h2>Cities flagged as critical on {{query_date}}: {{num_pred}}</h2>
           <table class="table table-striped">
             <tr>
               <th>City</th>
@@ -25,7 +25,7 @@
             </tr>
             {% endfor %}
           </table>
-          <h2>Cities with critical risk levels on {{query_date}}:</h2>
+          <h2>Cities with critical risk levels on {{query_date}}: {{num_crit}}</h2>
           <table class="table table-striped">
             <tr>
               <th>City</th>
@@ -38,7 +38,7 @@
             </tr>
             {% endfor %}
           </table>
-          <h2>Cities with elevated risk levels on {{query_date}}:</h2>
+          <h2>Cities with elevated risk levels on {{query_date}}: {{num_elev}}</h2>
           <table class="table table-striped">
             <tr>
               <th>City</th>
