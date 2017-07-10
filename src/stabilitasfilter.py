@@ -4,6 +4,7 @@ from haversine import haversine
 from itertools import izip
 from collections import defaultdict
 import time
+import datetime
 
 
 class StabilitasFilter(object):
@@ -110,7 +111,7 @@ class StabilitasFilter(object):
         anomaly_threshold=1,
         precalculated=True,
         quadratic=True,
-        write_to_file=False
+        save_labels=False
     ):
         """
         Fit model to reports included in file. This method loads the data,
@@ -146,12 +147,12 @@ class StabilitasFilter(object):
         self.end = pd.to_datetime(end_datetime)
         self.date_range = pd.date_range(self.start, self.end)
 
-        self._load_data(data_filename, precalculated, write_to_file)
+        self._load_data(data_filename, precalculated, save_labels)
         self._build_cities_timeseries(quadratic)
         self._find_anomalies()
         self._anomalies_by_day()
 
-    def _load_data(self, data_filename, precalculated, write_to_file):
+    def _load_data(self, data_filename, precalculated, save_labels):
         """
         Load data from the given file.
 
@@ -183,7 +184,8 @@ class StabilitasFilter(object):
             names=column_names
         )
         self._preprocess_data()
-        self._map_reports_to_cities(precalculated, write_to_file)
+        self._map_reports_to_cities(precalculated, save_labels)
+        self._build_multiindex()
         finish = time.time()
         print "{0} reports loaded in {1} seconds.".format(
             len(self.reports_df), finish-start
@@ -235,7 +237,7 @@ class StabilitasFilter(object):
         finish = time.time()
         print "        Reports processed in {0} seconds".format(finish-start)
 
-    def _map_reports_to_cities(self, precalculated=False, write_to_file=False):
+    def _map_reports_to_cities(self, precalculated=False, save_labels=False):
         """
         Method that calculates the haversine distance from each report to each
         city, identifies the city closest to each report, and labels each
@@ -247,50 +249,78 @@ class StabilitasFilter(object):
         """
         print "        Labeling reports with cities..."
         start = time.time()
+
         if precalculated:
-            precalculated_filename = "data/city_label_indices.csv"
-            city_label_indices = pd.read_csv(
+            precalculated_filename = "data/city_labels.csv"
+            city_labels = pd.read_csv(
                 precalculated_filename,
                 header=None
             )
-            city_label_indices = city_label_indices[1].values
+            city_labels = city_labels[1].values
+
         else:
+            city_labels = []
             city_label_indices = []
+
             for report in self.reports_df["lat_long"]:
                 distances = []
                 for city in self.cities_df["lat_long"]:
                     distances.append(haversine(report, city))
                 city_label_indices.append(np.argmin(distances))
-            indices_df = pd.DataFrame(city_label_indices)
-            if write_to_file:
-                indices_df.to_csv(
-                    "data/city_label_indices.csv",
-                    header=False,
-                    mode="w"
-                )
 
-        city_labels = []
-        for index in city_label_indices:
-            city_labels.append(self.cities_df.ix[index, "name"])
+            for index in city_label_indices:
+                city_labels.append(self.cities_df.ix[index, "name"])
+
+        if save_labels:
+            labels = pd.DataFrame(city_labels)
+            labels.to_csv(
+                "data/city_labels.csv",
+                header=False,
+                mode="w"
+            )
 
         self.reports_df["city"] = city_labels
 
-        arrays = [
-            self.reports_df["start_ts"].values,
-            self.reports_df["city"].values,
-            range(len(self.reports_df))
-        ]
-        multi_index = pd.MultiIndex.from_arrays(arrays, names=["time", "city", "row"])
-
-        self.multi_df = pd.DataFrame(self.reports_df.values, index=multi_index)
-
-        # print self.multi_df.info()
-        # print self.multi_df.head()
 
         finish = time.time()
         print "        Reports labeled with cities in {0} seconds.".format(
             finish-start
         )
+
+    def _build_multiindex(self):
+        """
+        Method to build multi-index for increased performance.
+        """
+        column_names = [
+            "lat",
+            "lon",
+            "id",
+            "title",
+            "start_ts",
+            "report_type",
+            "severity",
+            "lat_long",
+            "severity_quadratic",
+            "city"
+        ]
+        arrays = [
+            pd.to_datetime(self.reports_df["start_ts"].values),
+            self.reports_df["city"].values,
+            range(len(self.reports_df))
+        ]
+        multi_index = pd.MultiIndex.from_arrays(arrays, names=["time", "city", "row"])
+
+        self.reports_df = pd.DataFrame(
+            self.reports_df.values,
+            index=multi_index,
+            columns=column_names
+            )
+        self.reports_df.sort_index(inplace=True)
+        self.reports_df["start_ts"] =\
+            pd.to_datetime(self.reports_df["start_ts"])
+        self.reports_df["severity_quadratic"] =\
+            self.reports_df["severity_quadratic"].apply(float)
+
 
     def _build_cities_timeseries(self, quadratic):
         """
@@ -300,9 +330,13 @@ class StabilitasFilter(object):
         """
         print "Building city timeseries..."
         start = time.time()
+        idx = pd.IndexSlice
 
-        for city in self.reports_df["city"].unique():
-            city_df = self.reports_df[self.reports_df["city"] == city]
+        for city in set(self.reports_df.index.get_level_values("city")):
+            city_df = self.reports_df.loc[idx[:, city, :], idx[:]]
+            # print city_df.info()
+            # print city_df.head()
+            # exit()
 
             if quadratic:
                 # Use engineered quadratic severity score
@@ -424,17 +458,25 @@ class StabilitasFilter(object):
         start = time.time()
         self.reports_df["anomalous"] = np.zeros(len(self.reports_df))
         time_delta = pd.Timedelta(minutes=self.resample_size)
+        idx = pd.IndexSlice
 
         for city in self.city_lookup.keys():
             try:
                 anomalies = self.city_lookup[city]["anomalies"]
                 for timestamp in anomalies.index:
+                    window_start = timestamp - time_delta
                     self.reports_df.loc[
-                        ((self.reports_df["city"] == city) &
-                        (self.reports_df["start_ts"] >= timestamp - time_delta) &
-                        (self.reports_df["start_ts"] <= timestamp)),
-                        "anomalous"
-                        ] = 1
+                        idx[window_start:timestamp, city, :],
+                        idx["anomalous"]
+                    ] = 1
+
+
+                        #
+                        # ((self.reports_df["city"] == city) &
+                        # (self.reports_df["start_ts"] >= timestamp - time_delta) &
+                        # (self.reports_df["start_ts"] <= timestamp)),
+                        # "anomalous"
+                        # ] = 1
             except:
                 continue
 

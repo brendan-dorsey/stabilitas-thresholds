@@ -28,7 +28,8 @@ def main():
         window_size="1w",
         anomaly_threshold=1,
         precalculated=True,
-        quadratic=True
+        quadratic=True,
+        save_labels=False
     )
 
     # These settings return 8.4% of reports as anomalous out of the sample data

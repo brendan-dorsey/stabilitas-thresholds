@@ -401,6 +401,18 @@ def main():
     print "Best AUC: ", grid10.best_score_
     print "Best params: ", grid10.best_params_
 
+    # Grid 10 Results:
+    # Best AUC:  0.789909985552
+    # Best params:  {
+    #     'classifier__learning_rate': 0.1,
+    #     'classifier__n_estimators': 100,
+    #     'classifier__max_depth': 13
+    #     'classifier__min_samples_split': 3,
+    #     'classifier__min_samples_leaf': 1,
+    #     'classifier__max_features': 'sqrt',
+    #     'classifier__subsample': 0.3,
+    # }
+
 
 
 if __name__ == '__main__':
