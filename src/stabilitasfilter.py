@@ -109,7 +109,8 @@ class StabilitasFilter(object):
         window_size="1w",
         anomaly_threshold=1,
         precalculated=True,
-        quadratic=True
+        quadratic=True,
+        write_to_file=False
     ):
         """
         Fit model to reports included in file. This method loads the data,
@@ -145,12 +146,12 @@ class StabilitasFilter(object):
         self.end = pd.to_datetime(end_datetime)
         self.date_range = pd.date_range(self.start, self.end)
 
-        self._load_data(data_filename, precalculated)
+        self._load_data(data_filename, precalculated, write_to_file)
         self._build_cities_timeseries(quadratic)
         self._find_anomalies()
         self._anomalies_by_day()
 
-    def _load_data(self, data_filename, precalculated):
+    def _load_data(self, data_filename, precalculated, write_to_file):
         """
         Load data from the given file.
 
@@ -182,7 +183,7 @@ class StabilitasFilter(object):
             names=column_names
         )
         self._preprocess_data()
-        self._map_reports_to_cities(precalculated)
+        self._map_reports_to_cities(precalculated, write_to_file)
         finish = time.time()
         print "{0} reports loaded in {1} seconds.".format(
             len(self.reports_df), finish-start
@@ -234,7 +235,7 @@ class StabilitasFilter(object):
         finish = time.time()
         print "        Reports processed in {0} seconds".format(finish-start)
 
-    def _map_reports_to_cities(self, precalculated=False):
+    def _map_reports_to_cities(self, precalculated=False, write_to_file=False):
         """
         Method that calculates the haversine distance from each report to each
         city, identifies the city closest to each report, and labels each
@@ -261,17 +262,30 @@ class StabilitasFilter(object):
                     distances.append(haversine(report, city))
                 city_label_indices.append(np.argmin(distances))
             indices_df = pd.DataFrame(city_label_indices)
-            indices_df.to_csv(
-                "data/city_label_indices.csv",
-                header=False,
-                mode="w"
-            )
+            if write_to_file:
+                indices_df.to_csv(
+                    "data/city_label_indices.csv",
+                    header=False,
+                    mode="w"
+                )
 
         city_labels = []
         for index in city_label_indices:
             city_labels.append(self.cities_df.ix[index, "name"])
 
         self.reports_df["city"] = city_labels
+
+        arrays = [
+            self.reports_df["start_ts"].values,
+            self.reports_df["city"].values,
+            range(len(self.reports_df))
+        ]
+        multi_index = pd.MultiIndex.from_arrays(arrays, names=["time", "city", "row"])
+
+        self.multi_df = pd.DataFrame(self.reports_df.values, index=multi_index)
+
+        # print self.multi_df.info()
+        # print self.multi_df.head()
 
         finish = time.time()
         print "        Reports labeled with cities in {0} seconds.".format(
