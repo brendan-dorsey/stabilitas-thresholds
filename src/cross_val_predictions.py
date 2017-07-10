@@ -19,11 +19,12 @@ def main():
 
 
     fig, ax = plt.subplots(1, figsize=(8,8))
-    cutoffs = [10]
+    # Use cutoff = 10 for 2std, cutoff = 30 for 1 std
+    cutoffs = [30]
     for cutoff in cutoffs:
         finder = StabilitasFinder()
         finder.load_data(
-            source="data/flagged_reports_quad_2std.csv",
+            source="data/flagged_reports_quad_1std.csv",
             date_lookup=date_lookup,
             city_lookup=city_lookup
         )
@@ -113,7 +114,7 @@ def main():
     ax.set_ylabel("True Positive Rate")
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    ax.set_title("ROC Curve score: Quad thresh: 2STD cutoff: 10")
+    ax.set_title("ROC Curve score: Quad thresh: 1STD cutoff: 30")
     plt.legend(loc="lower right")
     plt.show()
 

@@ -56,7 +56,6 @@ def main():
     # plt.show()
 
     # Grid 1 Results:
-
     # Best AUC:  0.792678915537
     # Best params:  {
     #     'vectorizer__stop_words': 'english',
@@ -70,33 +69,32 @@ def main():
     #     'classifier__n_jobs': -1,
     # }
 
-    param_grid2 = {
-        "vectorizer__analyzer": ["word"],
-        "vectorizer__stop_words": ["english"],
-        "vectorizer__max_features": [2500],
-        "classifier__n_estimators": [100],
-        "classifier__max_depth": [None],
-        "classifier__min_samples_split": [2000, 2100, 2200, 2300, 2400, 2500],
-        "classifier__min_samples_leaf": [1, 2, 3, 4, 5],
-        "classifier__max_features": ["sqrt"],
-        "classifier__n_jobs": [-1]
-    }
-    grid2 = GridSearchCV(
-        estimator=pipe,
-        cv=5,
-        n_jobs=-1,
-        param_grid=param_grid2,
-        scoring = "roc_auc",
-        refit=False
-    )
-
-    grid2.fit(X, y)
-
-    print "Best AUC: ", grid2.best_score_
-    print "Best params: ", grid2.best_params_
+    # param_grid2 = {
+    #     "vectorizer__analyzer": ["word"],
+    #     "vectorizer__stop_words": ["english"],
+    #     "vectorizer__max_features": [2500],
+    #     "classifier__n_estimators": [100],
+    #     "classifier__max_depth": [None],
+    #     "classifier__min_samples_split": [2000, 2100, 2200, 2300, 2400, 2500],
+    #     "classifier__min_samples_leaf": [1, 2, 3, 4, 5],
+    #     "classifier__max_features": ["sqrt"],
+    #     "classifier__n_jobs": [-1]
+    # }
+    # grid2 = GridSearchCV(
+    #     estimator=pipe,
+    #     cv=5,
+    #     n_jobs=-1,
+    #     param_grid=param_grid2,
+    #     scoring = "roc_auc",
+    #     refit=False
+    # )
+    #
+    # grid2.fit(X, y)
+    #
+    # print "Best AUC: ", grid2.best_score_
+    # print "Best params: ", grid2.best_params_
 
     # Grid 2 Results:
-
     # Best AUC:  0.791779190603
     # Best params:  {
     #     'vectorizer__analyzer': 'word',
@@ -106,6 +104,123 @@ def main():
     #     'classifier__max_depth': None
     #     'classifier__min_samples_split': 2200,
     #     'classifier__min_samples_leaf': 2,
+    #     'classifier__max_features': 'sqrt',
+    #     'classifier__n_jobs': -1,
+    # }
+
+    # param_grid3 = {
+    #     "vectorizer__analyzer": ["word"],
+    #     "vectorizer__stop_words": ["english"],
+    #     "vectorizer__max_features": [2500],
+    #     "classifier__n_estimators": [100],
+    #     "classifier__max_depth": [None],
+    #     "classifier__min_samples_split": [2, 2200],
+    #     "classifier__min_samples_leaf": [1, 2, 3, 4, 5],
+    #     "classifier__max_features": ["sqrt"],
+    #     "classifier__n_jobs": [-1]
+    # }
+    # grid3 = GridSearchCV(
+    #     estimator=pipe,
+    #     cv=5,
+    #     n_jobs=-1,
+    #     param_grid=param_grid3,
+    #     scoring = "roc_auc",
+    #     refit=False
+    # )
+    #
+    # grid3.fit(X, y)
+    #
+    # print "Best AUC: ", grid3.best_score_
+    # print "Best params: ", grid3.best_params_
+
+    # Grid 3 Results:
+    # Best AUC:  0.792287096279
+    # Best params:  {
+    #     'vectorizer__analyzer': 'word',
+    #     'vectorizer__stop_words': 'english',
+    #     'vectorizer__max_features': 2500,
+    #     'classifier__n_estimators': 100,
+    #     'classifier__max_depth': None
+    #     'classifier__min_samples_split': 2,
+    #     'classifier__min_samples_leaf': 3,
+    #     'classifier__max_features': 'sqrt',
+    #     'classifier__n_jobs': -1,
+    # }
+
+    # param_grid4 = {
+    #     "vectorizer__analyzer": ["word"],
+    #     "vectorizer__stop_words": ["english"],
+    #     "vectorizer__max_features": [2500],
+    #     "classifier__n_estimators": [100],
+    #     "classifier__max_depth": [None],
+    #     "classifier__min_samples_split": [2, 3, 4, 5],
+    #     "classifier__min_samples_leaf": [1, 2, 3, 4, 5],
+    #     "classifier__max_features": ["sqrt"],
+    #     "classifier__n_jobs": [-1]
+    # }
+    # grid4 = GridSearchCV(
+    #     estimator=pipe,
+    #     cv=5,
+    #     n_jobs=-1,
+    #     param_grid=param_grid4,
+    #     scoring = "roc_auc",
+    #     refit=False
+    # )
+    #
+    # grid4.fit(X, y)
+    #
+    # print "Best AUC: ", grid4.best_score_
+    # print "Best params: ", grid4.best_params_
+
+    # Grid 4 Results:
+    # Best AUC:  0.794431236878
+    # Best params:  {
+    #     'vectorizer__analyzer': 'word',
+    #     'vectorizer__stop_words': 'english',
+    #     'vectorizer__max_features': 2500,
+    #     'classifier__n_estimators': 100,
+    #     'classifier__max_depth': None
+    #     'classifier__min_samples_split': 5,
+    #     'classifier__min_samples_leaf': 3,
+    #     'classifier__max_features': 'sqrt',
+    #     'classifier__n_jobs': -1,
+    # }
+
+    param_grid5 = {
+        "vectorizer__analyzer": ["word"],
+        "vectorizer__stop_words": ["english"],
+        "vectorizer__max_features": [2500],
+        "classifier__n_estimators": [100],
+        "classifier__max_depth": [1, 10, 100, None],
+        "classifier__min_samples_split": [2, 5, 10, 100, 1000],
+        "classifier__min_samples_leaf": [3],
+        "classifier__max_features": ["sqrt"],
+        "classifier__n_jobs": [-1]
+    }
+    grid5 = GridSearchCV(
+        estimator=pipe,
+        cv=5,
+        n_jobs=-1,
+        param_grid=param_grid5,
+        scoring = "roc_auc",
+        refit=False
+    )
+
+    grid5.fit(X, y)
+
+    print "Best AUC: ", grid5.best_score_
+    print "Best params: ", grid5.best_params_
+
+    # Grid 5 Results:
+    # Best AUC:  0.794240700912
+    # Best params:  {
+    #     'vectorizer__analyzer': 'word',
+    #     'vectorizer__stop_words': 'english',
+    #     'vectorizer__max_features': 2500,
+    #     'classifier__n_estimators': 100,
+    #     'classifier__max_depth': None
+    #     'classifier__min_samples_split': 2,
+    #     'classifier__min_samples_leaf': 3,
     #     'classifier__max_features': 'sqrt',
     #     'classifier__n_jobs': -1,
     # }

@@ -176,9 +176,11 @@ class StabilitasFinder(object):
         self.confusion_matrix = confusion_matrix(self.y_test, self.predicted)
         return self.predicted
 
-    def cross_val_predict(self, thresholds=[0.245], model_type="rfc"):
+    def cross_val_predict(self, thresholds=[0.2164], model_type="gbc"):
         """
         Cross validate and predict across full dataset.
+        Default threshold of 0.2164 is best for quadratic scoring.
+        Default threshold of 0.2044 is best for volume scoring.
         """
         print "Generating cross-validated predictions..."
         X = self.flagged_df["title"].values
@@ -206,8 +208,8 @@ class StabilitasFinder(object):
                 n_estimators=2000,
                 n_jobs=-1,
                 max_depth=None,
-                min_samples_split=2200,
-                min_samples_leaf=2,
+                min_samples_split=2,
+                min_samples_leaf=3,
                 max_features="sqrt"
             ),
             "svm": SVC(
