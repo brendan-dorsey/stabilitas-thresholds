@@ -252,10 +252,7 @@ class StabilitasFilter(object):
 
         if precalculated:
             precalculated_filename = "data/city_labels.csv"
-            city_labels = pd.read_csv(
-                precalculated_filename,
-                header=None
-            )
+            city_labels = pd.read_csv(precalculated_filename, header=None)
             city_labels = city_labels[1].values
 
         else:
@@ -280,7 +277,6 @@ class StabilitasFilter(object):
             )
 
         self.reports_df["city"] = city_labels
-
 
         finish = time.time()
         print "        Reports labeled with cities in {0} seconds.".format(
@@ -334,9 +330,6 @@ class StabilitasFilter(object):
 
         for city in set(self.reports_df.index.get_level_values("city")):
             city_df = self.reports_df.loc[idx[:, city, :], idx[:]]
-            # print city_df.info()
-            # print city_df.head()
-            # exit()
 
             if quadratic:
                 # Use engineered quadratic severity score

@@ -23,7 +23,7 @@ def main():
     filter_layer.fit(
         data_filename,
         start_datetime="2016-12-12",
-        end_datetime="2016-12-26",
+        end_datetime="2016-12-27",
         resample_size=3,
         window_size="1w",
         anomaly_threshold=1,
