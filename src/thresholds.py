@@ -57,8 +57,7 @@ def main():
     # finder_layer.fit()
     # finder_layer.predict()
 
-    finder_layer.cross_val_predict(thresholds=[0.245], model_type="rfc")
-    # exit()
+    finder_layer.cross_val_predict()
     finder_layer._labeled_critical_cities_by_day()
     finder_layer._predicted_critical_cities_by_day()
 

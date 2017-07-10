@@ -17,6 +17,15 @@ def main():
     with open("app/city_lookup.json", "r") as f:
         city_lookup = json.load(f)
 
+    ########################################
+    ########################################
+    ##                                    ##
+    ##  The code below is for generating  ##
+    ##  a ROC curve and determining an    ##
+    ##  optimal decision threshold        ##
+    ##                                    ##
+    ########################################
+    ########################################
 
     fig, ax = plt.subplots(1, figsize=(8,8))
     # Use cutoff = 10 for 2std, cutoff = 30 for 1 std
@@ -31,15 +40,6 @@ def main():
         finder.label_critical_reports(cutoff)
         finder._labeled_critical_cities_by_day()
 
-        ########################################
-        ########################################
-        ##                                    ##
-        ##  The code below is for generating  ##
-        ##  a ROC curve and determining an    ##
-        ##  optimal decision threshold        ##
-        ##                                    ##
-        ########################################
-        ########################################
 
 
         # Various ranges of thresholds used in cross validation.
@@ -79,8 +79,7 @@ def main():
                 f1_scores.append(f1)
                 false_positive_rates.append(fpr)
                 true_positive_rates.append(tpr)
-                # for row in conf_mat:
-                #     print row
+
                 if (tpr > 0.7) & (fpr < 0.35):
                     print "Model: ", model
                     print "Cutoff: ", cutoff
