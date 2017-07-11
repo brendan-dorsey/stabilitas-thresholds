@@ -63,4 +63,4 @@ if __name__ == '__main__':
     with open("city_lookup.json") as f:
         city_lookup = json.load(f)
 
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=False)
