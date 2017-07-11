@@ -33,15 +33,18 @@ def query():
     critical_locs = [city_lookup[city]["location"] for city in critical_cities]
     elevated_locs = [city_lookup[city]["location"] for city in elevated_cities]
 
-    predicted_cities = sorted(zip(predicted_cities, predicted_locs))
-    critical_cities = sorted(zip(critical_cities, critical_locs))
-    elevated_cities = sorted(zip(elevated_cities, elevated_locs))
+    predicted_combos = sorted(zip(predicted_cities, predicted_locs))
+    critical_combos = sorted(zip(critical_cities, critical_locs))
+    elevated_combos = sorted(zip(elevated_cities, elevated_locs))
     return render_template(
         "query.html",
         query_date=key,
-        predicted_cities=predicted_cities,
-        critical_cities=critical_cities,
-        elevated_cities=elevated_cities,
+        predicted_cities=predicted_combos,
+        critical_cities=critical_combos,
+        elevated_cities=elevated_combos,
+        predicted_locs=predicted_locs,
+        critical_locs=critical_locs,
+        elevated_locs=elevated_locs,
         num_pred=len(predicted_cities),
         num_crit=len(critical_cities),
         num_elev=len(elevated_cities),
@@ -60,6 +63,4 @@ if __name__ == '__main__':
     with open("city_lookup.json") as f:
         city_lookup = json.load(f)
 
-    print date_lookup.keys()
-
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    app.run(host="0.0.0.0", port=8080, debug=True)

@@ -10,9 +10,90 @@
           <!-- Optional theme -->
           <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
+          <style>
+             #map {
+              height: 600px;
+              width: 100%;
+             }
+          </style>
+
       </head>
       <body>
           <h4><a href={{root_link}}>Submit another query</a>?</h4>
+          <h3>Map of Predicted (Red) Critical (Yellow) and Elevated (Blue) Cities</h3>
+          <div id="map"></div>
+          <script>
+            function myMap() {
+
+              var mapCanvas = document.getElementById("map");
+              var mapOptions = {
+                center: {lat: 0, lng: 0},
+                zoom: 3
+              };
+              var map = new google.maps.Map(mapCanvas,mapOptions);
+              for (var i=0; i < {{num_pred}}; i++) {
+                var city = new google.maps.LatLng({{predicted_locs}}[i][0], {{predicted_locs}}[i][1]);
+                var myPred = new google.maps.Circle({
+                  center: city,
+                  radius: 70000,
+                  strokeColor: "#FF0000",
+                  strokeOpacity: 1,
+                  strokeWeight: 2,
+                  fillColor: "#FFFFFF",
+                  fillOpacity: 0
+                });
+                myPred.setMap(map);
+              }
+              for (var i=0; i < {{num_crit}}; i++) {
+                var city = new google.maps.LatLng({{critical_locs}}[i][0], {{critical_locs}}[i][1]);
+                var myPred = new google.maps.Circle({
+                  center: city,
+                  radius: 50000,
+                  strokeColor: "#000000",
+                  strokeOpacity: 1,
+                  strokeWeight: 1,
+                  fillColor: "#FFA500",
+                  fillOpacity: .4
+                });
+                myPred.setMap(map);
+              }
+              for (var i=0; i < {{num_elev}}; i++) {
+                var city = new google.maps.LatLng({{elevated_locs}}[i][0], {{elevated_locs}}[i][1]);
+                var myPred = new google.maps.Circle({
+                  center: city,
+                  radius: 45000,
+                  strokeColor: "#000000",
+                  strokeOpacity: 0,
+                  strokeWeight: 0,
+                  fillColor: "#0000FF",
+                  fillOpacity: .4
+                });
+                myPred.setMap(map);
+              }
+            }
+            </script>
+          <!-- <script>
+            function myMap() {
+              var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 2,
+                center: {lat: 0, lng: 0}
+              });
+              var city = new google.maps.LatLng(36.20124,37.16117);
+              var predCircle = new google.maps.Circle({
+                center: city,
+                radius: 50000,
+                strokeColor:"#000000"
+                strokeOpacity:0.1,
+                strokeWeight:1,
+                fillColor:"#FFA500",
+                fillOpacity:1
+              });
+              predCircle.setMap(map)
+            }
+          </script> -->
+          <script async defer
+          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGnXfgTGgHRpqkSu0Sf5-nVFgt5_UmVk0&callback=myMap">
+          </script>
           <h2>Cities flagged as critical on {{query_date}}: {{num_pred}}</h2>
           <table class="table table-striped">
             <tr>
