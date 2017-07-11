@@ -3,18 +3,31 @@ import json
 from collections import defaultdict
 app = Flask(__name__)
 
-@app.route("/", methods=["GET", "POST"])
-def root():
-    return render_template("root.html"), 200
 
-@app.route("/query", methods=["GET", "POST"])
-def query():
-    key = str(request.form["user_input"])
+@app.route("/", methods=["GET", "POST"])
+def map():
+    try:
+        key = str(request.form["user_input"])
+    except:
+        key = ""
 
     try:
         date_lookup[key]
     except KeyError:
-        return render_template("root.html"), 200
+        return render_template(
+            "map_root.html",
+            query_date=key,
+            predicted_cities=[],
+            critical_cities=[],
+            elevated_cities=[],
+            predicted_locs=[],
+            critical_locs=[],
+            elevated_locs=[],
+            num_pred=0,
+            num_crit=0,
+            num_elev=0,
+            root_link=url_for("map")
+        ), 200
 
     try:
         predicted_cities = set(date_lookup[key][2])
@@ -26,9 +39,14 @@ def query():
     except IndexError:
         critical_cities = []
 
-    elevated_cities = set(date_lookup[key][0])
+    try:
+        elevated_cities = set(date_lookup[key][0])
+    except IndexError:
+        elevated_cities = []
+
     for city in critical_cities:
         elevated_cities.remove(city)
+
     predicted_locs = [city_lookup[city]["location"] for city in predicted_cities]
     critical_locs = [city_lookup[city]["location"] for city in critical_cities]
     elevated_locs = [city_lookup[city]["location"] for city in elevated_cities]
@@ -38,7 +56,7 @@ def query():
     elevated_combos = sorted(zip(elevated_cities, elevated_locs))
 
     return render_template(
-        "query.html",
+        "map_root.html",
         query_date=key,
         predicted_cities=predicted_combos,
         critical_cities=critical_combos,
@@ -49,12 +67,8 @@ def query():
         num_pred=len(predicted_cities),
         num_crit=len(critical_cities),
         num_elev=len(elevated_cities),
-        root_link=url_for("root")
+        root_link=url_for("map")
     ), 200
-
-@app.route("/map_query", methods=["GET", "POST"])
-def map():
-    return render_template("basic_map.html"), 200
 
 
 if __name__ == '__main__':

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Stabilitas Thresholds v1.2</title>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+        <style>
+           #map {
+            height: 600px;
+            width: 95%;
+           }
+        </style>
+
+
+    </head>
+    <body>
+        <h1><a href="http://stabilitas.io/">Stabilitas</a> Thresholds v1.2</h1>
+        <p>
+            Welcome! This site will allow you to enter a date and see
+            cities with population 300,000 or more that had elevated,
+            critical, and predicted critical levels of risk reporting on
+            that day. Current date range is 2016-12-12 to 2016-12-26.
+        </p>
+        <h3>Please enter a date in the format "YYYY-MM-DD"</h3>
+        <form action="/" method='POST' >
+            <input type="text" name="user_input" />
+            <input type="submit" />
+        </form>
+        <h3>Map of Predicted (Red) Critical (Yellow) and Elevated (Blue) Cities</h3>
+        <div id="map"></div>
+        <script>
+          function myMap() {
+
+            var mapCanvas = document.getElementById("map");
+            var mapOptions = {
+              center: {lat: 20, lng: 0},
+              zoom: 3
+            };
+            var map = new google.maps.Map(mapCanvas,mapOptions);
+            for (var i=0; i < {{num_pred}}; i++) {
+              var city = new google.maps.LatLng({{predicted_locs}}[i][0], {{predicted_locs}}[i][1]);
+              var myPred = new google.maps.Circle({
+                center: city,
+                radius: 70000,
+                strokeColor: "#FF0000",
+                strokeOpacity: 1,
+                strokeWeight: 2,
+                fillColor: "#FFFFFF",
+                fillOpacity: 0
+              });
+              myPred.setMap(map);
+            }
+            for (var i=0; i < {{num_crit}}; i++) {
+              var city = new google.maps.LatLng({{critical_locs}}[i][0], {{critical_locs}}[i][1]);
+              var myPred = new google.maps.Circle({
+                center: city,
+                radius: 50000,
+                strokeColor: "#000000",
+                strokeOpacity: 1,
+                strokeWeight: 1,
+                fillColor: "#FFA500",
+                fillOpacity: .6
+              });
+              myPred.setMap(map);
+            }
+            for (var i=0; i < {{num_elev}}; i++) {
+              var city = new google.maps.LatLng({{elevated_locs}}[i][0], {{elevated_locs}}[i][1]);
+              var myPred = new google.maps.Circle({
+                center: city,
+                radius: 45000,
+                strokeColor: "#000000",
+                strokeOpacity: 0,
+                strokeWeight: 0,
+                fillColor: "#0000FF",
+                fillOpacity: .5
+              });
+              myPred.setMap(map);
+            }
+          }
+          </script>
+        <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGnXfgTGgHRpqkSu0Sf5-nVFgt5_UmVk0&callback=myMap">
+        </script>
+        <h2>Cities flagged as critical on {{query_date}}: {{num_pred}}</h2>
+        <table class="table table-striped">
+          <tr>
+            <th>City</th>
+            <th>Location</th>
+          </tr>
+          {% for city, location in predicted_cities %}
+          <tr>
+            <td>{{city}}</td>
+            <td>{{location}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        <h2>Cities with critical risk levels on {{query_date}}: {{num_crit}}</h2>
+        <table class="table table-striped">
+          <tr>
+            <th>City</th>
+            <th>Location</th>
+          </tr>
+          {% for city, location in critical_cities %}
+          <tr>
+            <td>{{city}}</td>
+            <td>{{location}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        <h2>Cities with elevated risk levels on {{query_date}}: {{num_elev}}</h2>
+        <table class="table table-striped">
+          <tr>
+            <th>City</th>
+            <th>Location</th>
+          </tr>
+          {% for city, location in elevated_cities %}
+          <tr>
+            <td>{{city}}</td>
+            <td>{{location}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        <h4><a href={{root_link}}>Submit another query</a>?</h4>
+    </body>
+</html>
