@@ -105,15 +105,26 @@ def main():
                 alpha=0.5
                 )
     ax.plot([0,1], [0, 1], linestyle="--", color="k")
-    ax.plot([0.3,0.3], [0.7, 1], color="g", alpha=0.3)
-    ax.plot([0,0.3], [0.7, 0.7], color="g", alpha=0.3)
-    ax.scatter(0.2, 0.8, color="k", label="goal")
+    ax.fill_between(
+        np.arange(0.0, 0.3, 0.01),
+        0.7,
+        1,
+        color="g",
+        alpha=0.3
+    )
+
+    ax.scatter(
+        0.056,
+        0.919,
+        color="k",
+        label="Current Per Day Performance"
+    )
 
     ax.set_xlabel("False Positive Rate")
     ax.set_ylabel("True Positive Rate")
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    ax.set_title("ROC Curve score: Quad thresh: 1STD cutoff: 30")
+    ax.set_title("ROC Curve with Severity Scoring and 1 SD Threshold")
     plt.legend(loc="lower right")
     plt.show()
 

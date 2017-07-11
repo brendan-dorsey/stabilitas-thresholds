@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
 import json
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import roc_auc_score, confusion_matrix, roc_curve
 from itertools import combinations, product
+import matplotlib.pyplot as plt
+plt.style.use("ggplot")
 
 
 def main():
@@ -54,15 +56,20 @@ def main():
 
     print "Confusion Matrix:"
     for row in conf_mat:
-        print row
+        print "     ", row
 
+    print ""
+    print "AUC: ", roc_auc_score(y_true, y_pred)
+    print "Precision: ", precision
     print "True Positive Rate (Recall): ", tpr
     print "False Positive Rate: ", fpr
     print "False Discovery Rate: ", fdr
-    print "Precision: ", precision
     print "F1 Score: ", f1
 
-
+    t, f, th = roc_curve(y_true, y_pred)
+    plt.plot(t, f, label="ROC")
+    plt.legend()
+    plt.show()
 
 
 
