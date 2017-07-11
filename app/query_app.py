@@ -12,6 +12,11 @@ def query():
     key = str(request.form["user_input"])
 
     try:
+        date_lookup[key]
+    except KeyError:
+        return render_template("root.html"), 200
+
+    try:
         predicted_cities = set(date_lookup[key][2])
     except IndexError:
         predicted_cities = []
