@@ -13,24 +13,24 @@ def main():
     Function to test implementation of Stabilitas Finder.
     """
     finder = StabilitasFinder()
-    finder.load_data(source="data/flagged_reports.csv")
+    finder.load_data(source="data/flagged_reports_quad_1std.csv")
 
     finder.label_critical_reports()
-    finder.preprocesses_data(mode="evaluate")
-
-    finder.fit()
-    finder.predict()
-    finder._labeled_critical_cities_by_day()
+    finder.cross_val_predict()
+    finder.extract_critical_titles()
 
 
-    conf_mat = finder.confusion_matrix
+
+
+
+    # conf_mat = finder.confusion_matrix
     # Transpoition of sklearn confusion matrix to my preferred format:
     # TP  FN
     # FP  TN
-    conf_mat = [[conf_mat[1][1], conf_mat[1][0]], [conf_mat[0][1], conf_mat[0][0]]]
-
-    for row in conf_mat:
-        print row
+    # conf_mat = [[conf_mat[1][1], conf_mat[1][0]], [conf_mat[0][1], conf_mat[0][0]]]
+    #
+    # for row in conf_mat:
+    #     print row
 
     ########################################
     ########################################

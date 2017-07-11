@@ -36,6 +36,7 @@ def query():
     predicted_combos = sorted(zip(predicted_cities, predicted_locs))
     critical_combos = sorted(zip(critical_cities, critical_locs))
     elevated_combos = sorted(zip(elevated_cities, elevated_locs))
+
     return render_template(
         "query.html",
         query_date=key,

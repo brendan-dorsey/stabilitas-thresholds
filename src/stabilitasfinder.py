@@ -50,7 +50,8 @@ class StabilitasFinder(object):
     ):
         """
         Method to load data into Finder Layer. Data must be passed from
-        StabilitasFilter as either a file or pandas DataFrame.
+        StabilitasFilter as either a filepath or pandas DataFrame. Lookups
+        are dictionaries to be passed in from Finder Layer
         """
         print "Loading data for Finder..."
         self.date_lookup = date_lookup
@@ -76,7 +77,7 @@ class StabilitasFinder(object):
         print "Labelling critical reports..."
         self.flagged_df["critical"] = np.zeros(len(self.flagged_df))
         next_day = pd.Timedelta(days=1)
-        titles = []
+        # titles = []
 
         for city in self.flagged_df["city"].unique():
 
@@ -84,7 +85,7 @@ class StabilitasFinder(object):
             city_df = city_df.set_index("start_ts")
 
             for row in city_df.iterrows():
-                titles.append(row[1][3])
+                # titles.append(row[1][3])
                 index = row[1][-2]
 
                 report_time = row[0]
@@ -94,8 +95,8 @@ class StabilitasFinder(object):
                 if len(future_reports) >= cutoff:
                     self.flagged_df.loc[index, "critical"] = 1
 
-        critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
-        critical_df["title"].to_csv("data/critical_titles.txt", sep=" ", mode="w")
+        # critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
+        # critical_df["title"].to_csv("data/critical_titles.txt", sep=" ", mode="w")
         # print "Critical cities by number of critical reports:"
         # print critical_df.groupby("city").count().sort_values("critical", ascending=False)["critical"]
         # print ""
@@ -141,7 +142,15 @@ class StabilitasFinder(object):
             Use "train" to train the model on a complete dataset
             Use "predict" to use the model on a live dataset
         """
-        self.model = MultinomialNB()
+        self.model = GradientBoostingClassifier(
+            learning_rate=0.005,
+            n_estimators=2000,
+            max_depth=13,
+            min_samples_split=3,
+            min_samples_leaf=1,
+            max_features="sqrt",
+            subsample=0.3
+        )
         self.model.fit(self.X_train, self.y_train)
 
     def predict_proba(self, X=None):
@@ -161,13 +170,10 @@ class StabilitasFinder(object):
         return self.probas
 
 
-    def predict(self, X=None, y=None, threshold=0.37):
+    def predict(self, X=None, y=None, threshold=0.2164):
         """
         Classify reports as critical or non-critical, based off predicted
         probability and threshold.
-
-        From initial testing, a threshold of 0.37 yields a true positive rate of
-        0.802 and a false positive rate of 0.213.
         """
         self.predict_proba(X)
 
@@ -179,6 +185,7 @@ class StabilitasFinder(object):
     def cross_val_predict(self, thresholds=[0.2164], model_type="gbc"):
         """
         Cross validate and predict across full dataset.
+        Default model is Gradient Boosting Classifier.
         Default threshold of 0.2164 is best for quadratic scoring.
         Default threshold of 0.2044 is best for volume scoring.
         """
@@ -233,15 +240,20 @@ class StabilitasFinder(object):
 
         if len(cv_predicted) == 1:
             self.flagged_df["predicted"] = cv_predicted[0]
+            self.flagged_df["predicted_probas"] = cv_probas
 
-        # print sum(self.flagged_df["predicted"])
-        # print self.flagged_df["predicted"]
+
         return cv_predicted
 
-    def _cross_val_nb(self, X_train, X_test, y_train):
-        model = MultinomialNB()
-        model.fit(X_train, y_train)
-        probas = [prob[1] for prob in model.predict_proba(X_test.toarray())]
+    def extract_critical_titles(self):
+        critical_df = self.flagged_df[
+            (self.flagged_df["critical"] == 1) |
+            (self.flagged_df["predicted"] == 1)
+        ]
+
+        critical_df[
+            ["title", "critical", "predicted"]
+        ].to_csv("eda/critical_titles.csv", sep=",", mode="w")
 
     def _labeled_critical_cities_by_day(self):
         if (self.date_lookup == None) | (self.city_lookup == None):
@@ -268,8 +280,6 @@ class StabilitasFinder(object):
         else:
             for city in self.flagged_df["city"].unique():
                 city_df = self.flagged_df[self.flagged_df["city"] == city]
-                # print city_df.head()
-                # exit()
                 series = pd.Series(
                     city_df["predicted"].values,
                     index=city_df["start_ts"],

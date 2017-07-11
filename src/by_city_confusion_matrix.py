@@ -71,6 +71,21 @@ def main():
     plt.legend()
     plt.show()
 
+    ########################
+    ###  11 JUL RESULTS  ###
+    ########################
+
+    # Confusion Matrix:
+    #   [57, 4]
+    #   [531, 8978]
+    #
+    # AUC:  0.939292197728
+    # Precision:  0.0967741935484
+    # True Positive Rate (Recall):  0.91935483871
+    # False Positive Rate:  0.0558359621451
+    # False Discovery Rate:  0.901528013582
+    # F1 Score:  0.175115207373
+
 
 
 if __name__ == '__main__':
