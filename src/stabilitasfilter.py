@@ -251,7 +251,7 @@ class StabilitasFilter(object):
         start = time.time()
 
         if precalculated:
-            precalculated_filename = "data/city_labels.csv"
+            precalculated_filename = "data/2016_city_labels.csv"
             city_labels = pd.read_csv(precalculated_filename, header=None)
             city_labels = city_labels[1].values
 

@@ -19,11 +19,11 @@ def main():
     cities_filename = "data/cities300000.csv"
     filter_layer = StabilitasFilter(cities_filename, cleaned=True)
 
-    data_filename = "data/reports_12DEC16-26DEC16.tsv"
+    data_filename = "data/2016/all_2016.txt"
     filter_layer.fit(
         data_filename,
-        start_datetime="2016-12-12",
-        end_datetime="2016-12-27",
+        start_datetime="2016-01-01",
+        end_datetime="2017-01-01",
         resample_size=3,
         window_size="1w",
         anomaly_threshold=1,
@@ -32,7 +32,10 @@ def main():
         save_labels=False
     )
 
-    # anomalies_df = filter_layer.get_anomaly_reports(write_to_file=False)
+    anomalies_df = filter_layer.get_anomaly_reports(
+        write_to_file=True,
+        filename="data/2016/flagged_reports_quad_1std.csv"
+        )
     date_lookup = filter_layer.date_lookup
     city_lookup = filter_layer.city_lookup
 
@@ -45,7 +48,7 @@ def main():
     finder_start = time.time()
     finder_layer = StabilitasFinder()
     finder_layer.load_data(
-        source="data/flagged_reports_quad_1std.csv",
+        source=anomalies_df,
         date_lookup=date_lookup,
         city_lookup=city_lookup
     )

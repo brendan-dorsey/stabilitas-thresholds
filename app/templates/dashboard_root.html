@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Dashboard Template for Bootstrap</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <style>
+       #map {
+        height: 600px;
+        width: 95%;
+       }
+    </style>
+
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Stabilitas Thresholds</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Home</a></li>
+            <li><a href="http://stabilitas.io/">Stabilitas</a></li>
+          </ul>
+          <form class="navbar-form navbar-right" action="/dashboard" method='POST'>
+            <input type="text" class="form-control" placeholder="YYYY-MM-DD" name="user_input">
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <!-- <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Export</a></li>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <li><a href="">Nav item</a></li>
+            <li><a href="">Nav item again</a></li>
+            <li><a href="">One more nav</a></li>
+            <li><a href="">Another nav item</a></li>
+            <li><a href="">More navigation</a></li>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <li><a href="">Nav item again</a></li>
+            <li><a href="">One more nav</a></li>
+            <li><a href="">Another nav item</a></li>
+          </ul>
+        </div> -->
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <<div class="text-muted"> </div>
+          <<div class="text-muted"> </div>
+          <h1 class="page-header">Anomalies on {{query_date}}</h1>
+
+          <!-- <div class="row placeholders"> -->
+            <div id="map"></div>
+            <script>
+              function myMap() {
+
+                var mapCanvas = document.getElementById("map");
+                var mapOptions = {
+                  center: {lat: 20, lng: 0},
+                  zoom: 3
+                };
+                var map = new google.maps.Map(mapCanvas,mapOptions);
+                for (var i=0; i < {{num_pred}}; i++) {
+                  var city = new google.maps.LatLng({{predicted_locs}}[i][0], {{predicted_locs}}[i][1]);
+                  var myPred = new google.maps.Circle({
+                    center: city,
+                    radius: 70000,
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1,
+                    strokeWeight: 2,
+                    fillColor: "#FFFFFF",
+                    fillOpacity: 0
+                  });
+                  myPred.setMap(map);
+                }
+                for (var i=0; i < {{num_crit}}; i++) {
+                  var city = new google.maps.LatLng({{critical_locs}}[i][0], {{critical_locs}}[i][1]);
+                  var myPred = new google.maps.Circle({
+                    center: city,
+                    radius: 50000,
+                    strokeColor: "#000000",
+                    strokeOpacity: 1,
+                    strokeWeight: 1,
+                    fillColor: "#FFA500",
+                    fillOpacity: .6
+                  });
+                  myPred.setMap(map);
+                }
+                for (var i=0; i < {{num_elev}}; i++) {
+                  var city = new google.maps.LatLng({{elevated_locs}}[i][0], {{elevated_locs}}[i][1]);
+                  var myPred = new google.maps.Circle({
+                    center: city,
+                    radius: 45000,
+                    strokeColor: "#000000",
+                    strokeOpacity: 0,
+                    strokeWeight: 0,
+                    fillColor: "#0000FF",
+                    fillOpacity: .5
+                  });
+                  myPred.setMap(map);
+                }
+              }
+              </script>
+            <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGnXfgTGgHRpqkSu0Sf5-nVFgt5_UmVk0&callback=myMap">
+            </script>
+            <h4>Legend</h4>
+            <div class="text-muted">Red Circle: Predicted Critical</div>
+            <div class="text-muted">Yellow Dot: Condition Critical</div>
+            <div class="text-muted">Blue Dot: Condition Elevated</div>
+          <!-- </div> -->
+
+          <h2 class="sub-header">{{num_pred}} Cities predicted critical on {{query_date}}</h2>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <tr>
+                <th>City</th>
+                <th>Probability of Critical Event</th>
+                <th>Most Critical Report</th>
+              </tr>
+              {% for city, proba, title in predicted_cities %}
+              <tr>
+                <td>{{city}}</td>
+                <td>{{proba}}</td>
+                <td>{{title}}</td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+          <h2 class="sub-header">{{num_crit}} Cities with condition critical on {{query_date}}</h2>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <tr>
+                <th>City</th>
+                <th>Probability of Critical Event</th>
+                <th>Most Critical Report</th>
+              </tr>
+              {% for city, proba, title in critical_cities %}
+              <tr>
+                <td>{{city}}</td>
+                <td>{{proba}}</td>
+                <td>{{title}}</td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+          <h2 class="sub-header">{{num_elev}} Cities with condition elevated on {{query_date}}</h2>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <tr>
+                <th>City</th>
+                <th>Probability of Critical Event</th>
+                <th>Most Critical Report</th>
+              </tr>
+              {% for city, proba, title in elevated_cities %}
+              <tr>
+                <td>{{city}}</td>
+                <td>{{proba}}</td>
+                <td>{{title}}</td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="../../dist/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>
