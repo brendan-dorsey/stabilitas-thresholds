@@ -453,7 +453,12 @@ class StabilitasFilter(object):
         time_delta = pd.Timedelta(minutes=self.resample_size)
         idx = pd.IndexSlice
 
-        for city in self.city_lookup.keys():
+        for i, city in enumerate(self.city_lookup.keys()):
+            print "     Flagging #{0} of {1} cities...".format(
+                i+1,
+                len(self.city_lookup.keys())
+            )
+            c_start = time.time()
             try:
                 anomalies = self.city_lookup[city]["anomalies"]
                 for timestamp in anomalies.index:
@@ -462,7 +467,15 @@ class StabilitasFilter(object):
                         idx[window_start:timestamp, city, :],
                         idx["anomalous"]
                     ] = 1
-            except:
+                print "     Finished #{0} in {1} seconds.".format(
+                    i+1,
+                    time.time()-c_start
+                )
+            except KeyError:
+                print "     Finished #{0} in {1} seconds.".format(
+                    i+1,
+                    time.time()-c_start
+                )
                 continue
 
         anomalies_df = self.reports_df[self.reports_df["anomalous"] == 1]

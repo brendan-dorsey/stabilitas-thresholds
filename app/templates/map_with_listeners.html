@@ -1,0 +1,99 @@
+<script>
+			var map, gj, newestBus;
+			function get_rtvl(){
+				var promise = $.getJSON('rtvl.geojson');
+				promise.then(function(data) {
+					gj = data;
+					new_buses = gj.features;
+					console.log('fetched ' + new_buses.length + ' features');
+					var new_bus = new_buses.pop();
+					var old_lat, old_lon, old_geo, new_lat, new_lon, new_geo;
+					while (typeof new_bus != 'undefined') {
+						old_bus = map.data.getFeatureById(new_bus.id)
+						if (typeof old_bus != 'undefined') {
+							new_lon = new_bus.geometry.coordinates[0];
+							new_lat = new_bus.geometry.coordinates[1];
+                            if (new_bus.properties['ts'] > old_bus.getProperty("ts")) {
+                                // update existing bus with new position
+                                new_geo = {'lng': new_bus.geometry.coordinates[0], 'lat': new_bus.geometry.coordinates[1]};
+								old_bus.setGeometry(new_geo);
+								old_bus.setProperty('ts', new_bus.properties['ts']);
+								console.log('moved ' + new_bus.id);
+							}
+							new_bus = null;
+							} else {
+                                // add new bus to map
+                                map.data.addGeoJson(new_bus);
+								console.log('added ' + new_bus.id)
+							}
+							new_bus = new_buses.pop();
+						}
+					});
+					// delete positions reported more than 6 minutes ago
+					map.data.forEach(function(bus) {
+						if(Date.now()/1000 - bus.getProperty("ts") > 360) {
+							console.log('Deleting expired vehicle #' + bus.getId());
+							map.data.remove(bus);
+						}
+					});
+				}
+				function initMap() {
+					var mapDiv = document.getElementById('map');
+					map = new google.maps.Map(mapDiv, {
+						center: {lat: 47.6, lng: -122.3},
+						zoom: 12
+					});
+					get_rtvl();
+				  infoWindow = new google.maps.InfoWindow({content: ""});
+
+					map.data.addListener('click', function(event) {
+						//show an infowindow on click
+						var busInfo = '<div style="line-height:1.35;overflow:hidden;white-space:nowrap;">' +
+							'Vehicle #' + event.feature.getId() + '<br />' +
+							new Date(event.feature.getProperty('ts')*1000) +
+							'</div>'
+						infoWindow.setContent(busInfo);
+						var anchor = new google.maps.MVCObject();
+						anchor.set("position",event.latLng);
+						infoWindow.open(map,anchor);
+					});
+					//var trafficLayer = new google.maps.TrafficLayer();
+					//trafficLayer.setMap(map);
+					/* map.data.loadGeoJson('route.geojson'); */
+					map.data.setStyle({
+						icon: {
+							path: google.maps.SymbolPath.CIRCLE,
+							fillColor: 'blue',
+							fillOpacity: 0.7,
+							scale: 3,
+							strokeWeight: 0,
+						},
+						strokeColor: 'purple',
+						strokeOpacity: 0.5,
+					});
+					var styles = [
+						{
+							stylers: [
+									{ hue: "#DBA" },
+									{ saturation: -80 }
+								]
+						},{
+							featureType: "road",
+							elementType: "geometry",
+							stylers: [
+								{ lightness: 100 },
+								{ visibility: "simplified" }
+							]
+						},{
+							featureType: "all",
+							elementType: "labels",
+							stylers: [
+								{ visibility: "off" }
+							]
+						}
+					];
+					map.setOptions({styles: styles});
+					setInterval(get_rtvl, 5000)
+				}
+
+		</script>
