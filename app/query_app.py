@@ -54,21 +54,21 @@ def map():
     predicted_probas = []
     for city in predicted_cities:
         try:
-            predicted_probas.append(city_lookup[city][key][0])
+            predicted_probas.append(round(city_lookup[city][key][0], 3))
         except:
             predicted_probas.append(0)
 
     critical_probas = []
     for city in critical_cities:
         try:
-            critical_probas.append(city_lookup[city][key][0])
+            critical_probas.append(round(city_lookup[city][key][0], 3))
         except:
             critical_probas.append(0)
 
     elevated_probas = []
     for city in elevated_cities:
         try:
-            elevated_probas.append(city_lookup[city][key][0])
+            elevated_probas.append(round(city_lookup[city][key][0], 3))
         except:
             elevated_probas.append(0)
 
