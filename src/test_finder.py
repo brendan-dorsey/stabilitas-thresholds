@@ -13,11 +13,11 @@ def main():
     Function to test implementation of Stabilitas Finder.
     """
     finder = StabilitasFinder()
-    finder.load_data(source="data/flagged_reports_quad_1std.csv")
+    finder.load_data(source="data/OCT_flagged_reports_vol_1std.csv")
 
     finder.label_critical_reports()
     finder.cross_val_predict()
-    finder.extract_critical_titles()
+    # finder.extract_critical_titles()
 
 
 
