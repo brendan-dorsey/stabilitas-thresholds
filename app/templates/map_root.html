@@ -87,41 +87,47 @@
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGnXfgTGgHRpqkSu0Sf5-nVFgt5_UmVk0&callback=myMap">
         </script>
         <h2>Cities flagged as critical on {{query_date}}: {{num_pred}}</h2>
-        <table class="table table-striped">
+        <table class="table table-hover">
           <tr>
             <th>City</th>
-            <th>Location</th>
+            <th>Probability of Critical Event</th>
+            <th>Most Critical Report</th>
           </tr>
-          {% for city, location in predicted_cities %}
+          {% for city, proba, title in predicted_cities %}
           <tr>
             <td>{{city}}</td>
-            <td>{{location}}</td>
+            <td>{{proba}}</td>
+            <td>{{title}}</td>
           </tr>
           {% endfor %}
         </table>
         <h2>Cities with critical risk levels on {{query_date}}: {{num_crit}}</h2>
-        <table class="table table-striped">
+        <table class="table table-hover">
           <tr>
             <th>City</th>
-            <th>Location</th>
+            <th>Probability of Critical Event</th>
+            <th>Most Critical Report</th>
           </tr>
-          {% for city, location in critical_cities %}
+          {% for city, proba, title in critical_cities %}
           <tr>
             <td>{{city}}</td>
-            <td>{{location}}</td>
+            <td>{{proba}}</td>
+            <td>{{title}}</td>
           </tr>
           {% endfor %}
         </table>
         <h2>Cities with elevated risk levels on {{query_date}}: {{num_elev}}</h2>
-        <table class="table table-striped">
+        <table class="table table-hover">
           <tr>
             <th>City</th>
-            <th>Location</th>
+            <th>Probability of Critical Event</th>
+            <th>Most Critical Report</th>
           </tr>
-          {% for city, location in elevated_cities %}
+          {% for city, proba, title in elevated_cities %}
           <tr>
             <td>{{city}}</td>
-            <td>{{location}}</td>
+            <td>{{proba}}</td>
+            <td>{{title}}</td>
           </tr>
           {% endfor %}
         </table>

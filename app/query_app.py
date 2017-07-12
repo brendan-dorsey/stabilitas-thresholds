@@ -9,7 +9,7 @@ def map():
     try:
         key = str(request.form["user_input"])
     except:
-        key = ""
+        key = "2016-12-20"
 
     try:
         date_lookup[key]
@@ -51,9 +51,63 @@ def map():
     critical_locs = [city_lookup[city]["location"] for city in critical_cities]
     elevated_locs = [city_lookup[city]["location"] for city in elevated_cities]
 
-    predicted_combos = sorted(zip(predicted_cities, predicted_locs))
-    critical_combos = sorted(zip(critical_cities, critical_locs))
-    elevated_combos = sorted(zip(elevated_cities, elevated_locs))
+    predicted_probas = []
+    for city in predicted_cities:
+        try:
+            predicted_probas.append(city_lookup[city][key][0])
+        except:
+            predicted_probas.append(0)
+
+    critical_probas = []
+    for city in critical_cities:
+        try:
+            critical_probas.append(city_lookup[city][key][0])
+        except:
+            critical_probas.append(0)
+
+    elevated_probas = []
+    for city in elevated_cities:
+        try:
+            elevated_probas.append(city_lookup[city][key][0])
+        except:
+            elevated_probas.append(0)
+
+    predicted_titles = []
+    for city in predicted_cities:
+        try:
+            predicted_titles.append(city_lookup[city][key][1])
+        except:
+            predicted_titles.append("None predicted critical")
+
+    critical_titles = []
+    for city in critical_cities:
+        try:
+            critical_titles.append(city_lookup[city][key][1])
+        except:
+            critical_titles.append("None predicted critical")
+
+    elevated_titles = []
+    for city in elevated_cities:
+        try:
+            elevated_titles.append(city_lookup[city][key][1])
+        except:
+            elevated_titles.append("None predicted critical")
+
+    predicted_combos = sorted(
+        zip(predicted_cities, predicted_probas, predicted_titles),
+        key=lambda x: x[1],
+        reverse=True
+    )
+    critical_combos = sorted(
+        zip(critical_cities, critical_probas, critical_titles),
+        key=lambda x: x[1],
+        reverse=True
+    )
+    elevated_combos = sorted(
+        zip(elevated_cities, elevated_probas, elevated_titles),
+        key=lambda x: x[1],
+        reverse=True
+    )
 
     return render_template(
         "map_root.html",
