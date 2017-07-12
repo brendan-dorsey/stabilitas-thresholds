@@ -60,6 +60,7 @@ def main():
     finder_layer.cross_val_predict()
     finder_layer._labeled_critical_cities_by_day()
     finder_layer._predicted_critical_cities_by_day()
+    finder_layer._most_critical_report_per_city_per_day()
 
     finder_finish = time.time()
 
@@ -83,13 +84,19 @@ def main():
     with open("app/date_lookup.json", mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
-    truncated_city_lookup = {}
-    for city in finder_layer.city_lookup.keys():
-        truncated_city_lookup[city] = {
-            "location": finder_layer.city_lookup[city]["location"]
-        }
+    city_lookup = finder_layer.city_lookup
+
+    drop_keys = ["timeseries", "anomalies"]
+    for key in drop_keys:
+        for sub_dict in city_lookup.values():
+            if isinstance(sub_dict, dict):
+                try:
+                    del sub_dict[key]
+                except KeyError:
+                    pass
+
     with open("app/city_lookup.json", mode="w") as f:
-        json.dump(truncated_city_lookup, f)
+        json.dump(city_lookup, f)
 
 
     ########################################

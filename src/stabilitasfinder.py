@@ -259,6 +259,7 @@ class StabilitasFinder(object):
         if (self.date_lookup == None) | (self.city_lookup == None):
             print "Needs lookup dicts from Filter Layer"
         else:
+            print "Grouping labeled cities by day..."
             for city in self.flagged_df["city"].unique():
                 city_df = self.flagged_df[self.flagged_df["city"] == city]
                 series = pd.Series(
@@ -278,6 +279,7 @@ class StabilitasFinder(object):
         if (self.date_lookup == None) | (self.city_lookup == None):
             print "Needs lookup dicts from Filter Layer"
         else:
+            print "Grouping predicted cities by day..."
             for city in self.flagged_df["city"].unique():
                 city_df = self.flagged_df[self.flagged_df["city"] == city]
                 series = pd.Series(
@@ -295,5 +297,20 @@ class StabilitasFinder(object):
                     if daily_predicted[day] > 0.0:
                         self.date_lookup[key][2].append(city)
 
-    def get_critical_cities(self):
-        pass
+    def _most_critical_report_per_city_per_day(self):
+        if (self.date_lookup == None) | (self.city_lookup == None):
+            print "Needs lookup dicts from Filter Layer"
+        else:
+            print "Extracting most critical reports..."
+            for city in self.flagged_df["city"].unique():
+                city_df = self.flagged_df[self.flagged_df["city"] == city]
+                city_df["date"] = city_df["start_ts"].apply(lambda x: x.date())
+                days = set(city_df["date"])
+
+                for day in days:
+                    day_reports_df = city_df[city_df["date"] == day]
+                    key = str(day)
+                    index = np.argmax(day_reports_df["predicted_probas"])
+                    proba = day_reports_df.loc[index, "predicted_probas"]
+                    title = day_reports_df.loc[index, "title"]
+                    self.city_lookup[city][key] = (proba, title)
