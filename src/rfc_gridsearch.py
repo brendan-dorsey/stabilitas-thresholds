@@ -252,19 +252,19 @@ def main():
         json.dump(grid6.best_params_, f)
 
     with open("data/best_score.json", mode="w") as f:
-        json.dump(grid6.best_score, f)
+        json.dump(grid6.best_score_, f)
 
     # Grid 6 Results:
-    # Best AUC:
+    # Best AUC:  0.561452266293
     # Best params:  {
     #     'vectorizer__analyzer': 'word',
     #     'vectorizer__stop_words': 'english',
     #     'vectorizer__max_features': 2500,
     #     'classifier__n_estimators': 100,
-    #     'classifier__max_depth':
-    #     'classifier__min_samples_split': ,
-    #     'classifier__min_samples_leaf': ,
-    #     'classifier__max_features': 'sqrt',
+    #     'classifier__max_depth': None
+    #     'classifier__min_samples_split': 10,
+    #     'classifier__min_samples_leaf': 1,
+    #     'classifier__max_features': '100',
     #     'classifier__n_jobs': -1,
     # }
 

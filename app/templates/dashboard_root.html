@@ -11,10 +11,14 @@
 
     <title>Stabilitas Thresholds v2.0</title>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Bootstrap core CSS -->
+    <link href="../../dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="../../dist/css/dashboard.css" rel="stylesheet">
 
     <style>
        #map {
@@ -65,13 +69,11 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li>&nbsp;</li>
-            <li>&nbsp;</li>
-            <li>&nbsp;</li>
-            <li class="active"><a href="http://stabilitas.io/">Stabilitas <span class="sr-only">(current)</span></a></li>
+            <li class="active"><a href="#top">Map<span class="sr-only">(current)</span></a></li>
             <li><a href="#predicted_list">Predicted Critical</a></li>
             <li><a href="#critical_list">Critical</a></li>
             <li><a href="#elevated_list">Elevated</a></li>
+            <li><a href="http://stabilitas.io/">Stabilitas</a></li>
           </ul>
           <!-- <ul class="nav nav-sidebar">
             <li><a href="">Nav item</a></li>
@@ -89,8 +91,6 @@
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           <div class="text-muted">Welcome! Please enter a date between 2016-01-01 and 2016-12-31 in the search bar above using the format shown.</div>
           <h1 class="page-header">Anomalies on {{query_date}}</h1>
-
-          <div class="row placeholders">
             <div id="map"></div>
             <script>
               function myMap() {
@@ -174,20 +174,36 @@
             <script async defer
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGnXfgTGgHRpqkSu0Sf5-nVFgt5_UmVk0&callback=myMap">
             </script>
-            <h4>Legend</h4>
-            <div class="text-muted">Red Circle: Predicted Critical</div>
-            <div class="text-muted">Yellow Dot: Condition Critical</div>
-            <div class="text-muted">Blue Dot: Condition Elevated</div>
-          <!-- </div> -->
+            <div class="row placeholders">
+              <div class="col-xs-6 col-sm-3 placeholder">
+                <h4>Legend</h4>
+                <div class="text-muted">Red Circle: Predicted Critical</div>
+                <div class="text-muted">Yellow Dot: Condition Critical</div>
+                <div class="text-muted">Blue Dot: Condition Elevated</div>
+              </div>
+              <div class="col-xs-6 col-sm-3 placeholder">
+              </div>
+              <div class="col-xs-6 col-sm-3 placeholder">
+              </div>
+              <div class="col-xs-6 col-sm-3 placeholder">
+                <h4>Totals</h4>
+                <div class="text-muted">Total Predicted Critical: {{num_pred}}</div>
+                <div class="text-muted">Total Condition Critical: {{num_crit}}</div>
+                <div class="text-muted">Total Condition Elevated: {{num_elev}}</div>
+              </div>
+            </div>
+        <div class="row placeholders">
 
-          <h2 class="sub-header" id="predicted_list">{{num_pred}} Cities predicted critical on {{query_date}}</h2>
+          <h2 class="sub-header" id="predicted_list">Cities predicted critical on {{query_date}}</h2>
           <div class="table-responsive">
             <table class="table table-hover">
+              <thead>
               <tr>
-                <th>City</th>
+                <th text-center=True>City</th>
                 <th>Probability of Critical Event</th>
                 <th>Most Critical Report</th>
               </tr>
+            </thead>
               {% for city, proba, title, _ in predicted_cities %}
               <tr>
                 <td>{{city}}</td>
@@ -197,7 +213,7 @@
               {% endfor %}
             </table>
           </div>
-          <h2 class="sub-header" id="critical_list">{{num_crit}} Cities with condition critical on {{query_date}}</h2>
+          <h2 class="sub-header" id="critical_list">Cities with condition critical on {{query_date}}</h2>
           <div class="table-responsive">
             <table class="table table-hover">
               <tr>
@@ -214,7 +230,7 @@
               {% endfor %}
             </table>
           </div>
-          <h2 class="sub-header" id="elevated_list">{{num_elev}} Cities with condition elevated on {{query_date}}</h2>
+          <h2 class="sub-header" id="elevated_list">Cities with condition elevated on {{query_date}}</h2>
           <div class="table-responsive">
             <table class="table table-hover">
               <tr>

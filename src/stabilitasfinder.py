@@ -226,9 +226,9 @@ class StabilitasFinder(object):
                 n_estimators=2000,
                 n_jobs=-1,
                 max_depth=None,
-                min_samples_split=2,
-                min_samples_leaf=3,
-                max_features="sqrt"
+                min_samples_split=10,
+                min_samples_leaf=1,
+                max_features=100
             ),
             "svm": SVC(
                 kernel="linear",

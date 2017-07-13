@@ -100,7 +100,7 @@ def main():
     ###      12 JUL RESULTS       ###
     ###  first with full dataset  ###
     #################################
-    # NB: this model used VOLUME scoring only, not severity scoring
+    # Note: this model used VOLUME scoring only, not severity scoring
 
     # Confusion Matrix:
     #   [1178, 21]
