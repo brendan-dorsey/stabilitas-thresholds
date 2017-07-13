@@ -89,7 +89,7 @@
           </ul> -->
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <div class="text-muted">Welcome! Please enter a date between 2016-01-01 and 2016-12-31 in the search bar above using the format shown.</div>
+          <div class="text-muted text-right">Welcome! Please enter a date between 2016-01-01 and 2016-12-31 in the search bar above using the format shown.</div>
           <h1 class="page-header">Anomalies on {{query_date}}</h1>
             <div id="map"></div>
             <script>
@@ -194,55 +194,58 @@
             </div>
         <div class="row placeholders">
 
-          <h2 class="sub-header" id="predicted_list">Cities predicted critical on {{query_date}}</h2>
+          <h2 id="predicted_list">&nbsp;</h2>
+          <h2 class="sub-header">Cities predicted critical on {{query_date}}</h2>
           <div class="table-responsive">
             <table class="table table-hover">
               <thead>
               <tr>
-                <th text-center=True>City</th>
-                <th>Probability of Critical Event</th>
-                <th>Most Critical Report</th>
+                <th class="text-left">City</th>
+                <th class="text-center">Probability of Critical Event</th>
+                <th class="text-left">Most Critical Report</th>
               </tr>
             </thead>
               {% for city, proba, title, _ in predicted_cities %}
               <tr>
-                <td>{{city}}</td>
-                <td>{{proba}}</td>
-                <td>{{title}}</td>
+                <td class="text-left">{{city}}</td>
+                <td class="text-center">{{proba}}</td>
+                <td class="text-left">{{title}}</td>
               </tr>
               {% endfor %}
             </table>
           </div>
-          <h2 class="sub-header" id="critical_list">Cities with condition critical on {{query_date}}</h2>
+          <h2 id="critical_list">&nbsp;</h2>
+          <h2 class="sub-header">Cities with condition critical on {{query_date}}</h2>
           <div class="table-responsive">
             <table class="table table-hover">
               <tr>
-                <th>City</th>
-                <th>Probability of Critical Event</th>
-                <th>Most Critical Report</th>
+                <th class="text-left">City</th>
+                <th class="text-center">Probability of Critical Event</th>
+                <th class="text-left">Most Critical Report</th>
               </tr>
               {% for city, proba, title, _ in critical_cities %}
               <tr>
-                <td>{{city}}</td>
-                <td>{{proba}}</td>
-                <td>{{title}}</td>
+                <td class="text-left">{{city}}</td>
+                <td class="text-center">{{proba}}</td>
+                <td class="text-left">{{title}}</td>
               </tr>
               {% endfor %}
             </table>
           </div>
-          <h2 class="sub-header" id="elevated_list">Cities with condition elevated on {{query_date}}</h2>
+          <h2 id="elevated_list">&nbsp;</h2>
+          <h2 class="sub-header">Cities with condition elevated on {{query_date}}</h2>
           <div class="table-responsive">
             <table class="table table-hover">
               <tr>
-                <th>City</th>
-                <th>Probability of Critical Event</th>
-                <th>Most Critical Report</th>
+                <th class="text-left">City</th>
+                <th class="text-center">Probability of Critical Event</th>
+                <th class="text-left">Most Critical Report</th>
               </tr>
               {% for city, proba, title, _ in elevated_cities %}
               <tr>
-                <td>{{city}}</td>
-                <td>{{proba}}</td>
-                <td>{{title}}</td>
+                <td class="text-left">{{city}}</td>
+                <td class="text-center">{{proba}}</td>
+                <td class="text-left">{{title}}</td>
               </tr>
               {% endfor %}
             </table>
