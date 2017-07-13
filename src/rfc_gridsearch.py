@@ -226,8 +226,8 @@ def main():
     param_grid6 = {
         "vectorizer__analyzer": ["word"],
         "vectorizer__stop_words": ["english"],
-        "vectorizer__max_features": [500, 1000, 2500, 5000],
-        "classifier__n_estimators": [2000],
+        "vectorizer__max_features": [2500],
+        "classifier__n_estimators": [200],
         "classifier__max_depth": [None],
         "classifier__min_samples_split": [2, 5, 10, 100],
         "classifier__min_samples_leaf": [1, 2, 3, 10],

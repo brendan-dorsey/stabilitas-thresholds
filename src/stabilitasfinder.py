@@ -84,7 +84,8 @@ class StabilitasFinder(object):
         next_day = pd.Timedelta(days=1)
         # titles = []
 
-        for city in self.flagged_df["city"].unique():
+        num_cities = len(self.flagged_df["city"].unique())
+        for i, city in enumerate(self.flagged_df["city"].unique()):
 
             city_df = self.flagged_df[self.flagged_df["city"] == city]
             city_df = city_df.set_index("start_ts")
@@ -99,6 +100,8 @@ class StabilitasFinder(object):
                 future_reports = city_df[report_time:stop_time]
                 if len(future_reports) >= cutoff:
                     self.flagged_df.loc[index, "critical"] = 1
+        if i % 10 == 0:
+            print "  Reports labeled for {0} of {1} cities...".format(i, num_cities)
 
         # critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
         # critical_df["title"].to_csv("data/critical_titles.txt", sep=" ", mode="w")
