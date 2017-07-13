@@ -12,25 +12,34 @@ def main():
         date_lookup = json.load(f)
 
     dates = date_lookup.keys()
+    print len(dates)
 
     cities = set()
     for date in dates:
-        for city in date_lookup[date][0]:
-            cities.add(city)
+        try:
+            for city in date_lookup[date][0]:
+                cities.add(city)
+        except IndexError:
+            print date
+            print date_lookup[date]
 
     city_date_pairs = product(cities, dates)
 
     y_true = []
     y_pred = []
     for city, date in city_date_pairs:
-        if city in date_lookup[date][1]:
-            y_true.append(1)
-        else:
-            y_true.append(0)
-        if city in date_lookup[date][2]:
-            y_pred.append(1)
-        else:
-            y_pred.append(0)
+        try:
+            if city in date_lookup[date][1]:
+                y_true.append(1)
+            else:
+                y_true.append(0)
+            if city in date_lookup[date][2]:
+                y_pred.append(1)
+            else:
+                y_pred.append(0)
+        except:
+            print date
+            print date_lookup[date]
 
     conf_mat = confusion_matrix(y_true, y_pred)
     # Transpoition of sklearn confusion matrix to this format:
@@ -85,6 +94,24 @@ def main():
     # False Positive Rate:  0.0558359621451
     # False Discovery Rate:  0.901528013582
     # F1 Score:  0.175115207373
+
+
+    #################################
+    ###      12 JUL RESULTS       ###
+    ###  first with full dataset  ###
+    #################################
+    # NB: this model used VOLUME scoring only, not severity scoring
+
+    # Confusion Matrix:
+    #   [1178, 21]
+    #   [17745, 329996]
+    #
+    # AUC:  0.965728023224
+    # Precision:  0.0622489959839
+    # True Positive Rate (Recall):  0.981666666667
+    # False Positive Rate:  0.0510292113118
+    # False Discovery Rate:  0.937698161065
+    # F1 Score:  0.11707414033
 
 
 
