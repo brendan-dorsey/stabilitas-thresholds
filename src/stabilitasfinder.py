@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split, cross_val_predict, KFold
 from sklearn.metrics import confusion_matrix
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.svm import SVC
+import time
 
 
 class StabilitasFinder(object):
@@ -53,6 +54,7 @@ class StabilitasFinder(object):
         StabilitasFilter as either a filepath or pandas DataFrame. Lookups
         are dictionaries to be passed in from Finder Layer
         """
+        start = time.time()
         print "Loading data for Finder..."
         self.date_lookup = date_lookup
         self.city_lookup = city_lookup
@@ -73,8 +75,11 @@ class StabilitasFinder(object):
         self.flagged_df.reset_index(drop=True, inplace=True)
         self.flagged_df["index_copy"] = np.arange(len(self.flagged_df))
 
+        print "     Data loaded in {} seconds.".format(time.time()-start)
+
     def label_critical_reports(self, cutoff=30):
-        print "Labelling critical reports..."
+        start = time.time()
+        print "Labeling critical reports..."
         self.flagged_df["critical"] = np.zeros(len(self.flagged_df))
         next_day = pd.Timedelta(days=1)
         # titles = []
@@ -101,6 +106,8 @@ class StabilitasFinder(object):
         # print critical_df.groupby("city").count().sort_values("critical", ascending=False)["critical"]
         # print ""
         # print "Total critical reports: ", sum(self.flagged_df["critical"])
+
+        print "     Reports labeled in {} seconds.".format(time.time()-start)
 
     def preprocesses_data(self, mode="evaluate"):
         """
@@ -189,6 +196,7 @@ class StabilitasFinder(object):
         Default threshold of 0.2164 is best for quadratic scoring.
         Default threshold of 0.2044 is best for volume scoring.
         """
+        start = time.time()
         print "Generating cross-validated predictions..."
         X = self.flagged_df["title"].values
         y = self.flagged_df["critical"].values
@@ -242,7 +250,7 @@ class StabilitasFinder(object):
             self.flagged_df["predicted"] = cv_predicted[0]
             self.flagged_df["predicted_probas"] = cv_probas
 
-
+        print "     Predictions made in {} seconds.".format(time.time()-start)
         return cv_predicted
 
     def extract_critical_titles(self):

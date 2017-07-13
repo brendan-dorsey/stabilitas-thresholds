@@ -1,4 +1,4 @@
-from flask import Flask, flash url_for, render_template, request, jsonify
+from flask import Flask, flash, url_for, render_template, request, jsonify
 import json
 from collections import defaultdict
 app = Flask(__name__)

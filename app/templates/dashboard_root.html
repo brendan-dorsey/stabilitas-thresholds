@@ -139,7 +139,7 @@
         					// });
                 }
                 for (var i=0; i < {{num_elev}}; i++) {
-                  // var city_name = "{{elevated_cities[0][0]}}"
+                  var city_name = "{{elevated_cities[0][0]}}"
                   // var foo = {{elevated_cities}}[i][0]
                   // debugger;
 
@@ -152,19 +152,21 @@
                     strokeWeight: 0,
                     fillColor: "#0000FF",
                     fillOpacity: .5,
-                    clickable:true
+                    clickable: true,
+                    id: i
                   });
                   circleElev.setMap(map);
                   // debugger;
-                  // var infowindow = new google.maps.InfoWindow({
-                  //   content: city_name
-                  // });
+                  var infowindow = new google.maps.InfoWindow({
+                    content: city_name
+                  });
                   //
-                  // google.maps.event.addListener(circleElev, 'mouseover', function(ev) {
-                  //   infowindow.setPosition(circleElev.getCenter());
-                  //   console.log(city)
-                  //   infowindow.open(map);
-                  // });
+                  google.maps.event.addListener(circleElev, 'mouseover', function(event) {
+                    infowindow.setPosition(circleElev.getCenter());
+                    console.log(city)
+                    console.log(event.feature.getId())
+                    infowindow.open(map);
+                  });
                 }
               }
               </script>

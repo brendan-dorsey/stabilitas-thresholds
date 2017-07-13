@@ -15,7 +15,7 @@ plt.style.use("ggplot")
 
 def main():
     finder = StabilitasFinder()
-    finder.load_data(source="data/flagged_reports.csv",)
+    finder.load_data(source="data/2016_flagged_reports_quad_1std_1wk.csv")
     finder.label_critical_reports(cutoff=30)
     X = finder.flagged_df["title"].values
     y = finder.flagged_df["critical"].values
@@ -196,31 +196,70 @@ def main():
         "classifier__min_samples_leaf": [3],
         "classifier__max_features": ["sqrt"],
         "classifier__n_jobs": [-1]
+    # }
+    # grid5 = GridSearchCV(
+    #     estimator=pipe,
+    #     cv=5,
+    #     n_jobs=-1,
+    #     param_grid=param_grid5,
+    #     scoring = "roc_auc",
+    #     refit=False
+    # )
+    #
+    # grid5.fit(X, y)
+    #
+    # print "Best AUC: ", grid5.best_score_
+    # print "Best params: ", grid5.best_params_
+
+    Grid 5 Results:
+    Best AUC:  0.794240700912
+    Best params:  {
+        'vectorizer__analyzer': 'word',
+        'vectorizer__stop_words': 'english',
+        'vectorizer__max_features': 2500,
+        'classifier__n_estimators': 100,
+        'classifier__max_depth': None
+        'classifier__min_samples_split': 2,
+        'classifier__min_samples_leaf': 3,
+        'classifier__max_features': 'sqrt',
+        'classifier__n_jobs': -1,
+    # }
+
+    param_grid6 = {
+        "vectorizer__analyzer": ["word"],
+        "vectorizer__stop_words": ["english"],
+        "vectorizer__max_features": [2500],
+        "classifier__n_estimators": [100],
+        "classifier__max_depth": [None],
+        "classifier__min_samples_split": [2, 5, 10, 100],
+        "classifier__min_samples_leaf": [1, 2, 3, 10],
+        "classifier__max_features": ["sqrt"],
+        "classifier__n_jobs": [-1]
     }
-    grid5 = GridSearchCV(
+    grid6 = GridSearchCV(
         estimator=pipe,
         cv=5,
         n_jobs=-1,
-        param_grid=param_grid5,
+        param_grid=param_grid6,
         scoring = "roc_auc",
         refit=False
     )
 
-    grid5.fit(X, y)
+    grid6.fit(X, y)
 
-    print "Best AUC: ", grid5.best_score_
-    print "Best params: ", grid5.best_params_
+    print "Best AUC: ", grid6.best_score_
+    print "Best params: ", grid6.best_params_
 
-    # Grid 5 Results:
-    # Best AUC:  0.794240700912
+    # Grid 6 Results:
+    # Best AUC:
     # Best params:  {
     #     'vectorizer__analyzer': 'word',
     #     'vectorizer__stop_words': 'english',
     #     'vectorizer__max_features': 2500,
     #     'classifier__n_estimators': 100,
-    #     'classifier__max_depth': None
-    #     'classifier__min_samples_split': 2,
-    #     'classifier__min_samples_leaf': 3,
+    #     'classifier__max_depth':
+    #     'classifier__min_samples_split': ,
+    #     'classifier__min_samples_leaf': ,
     #     'classifier__max_features': 'sqrt',
     #     'classifier__n_jobs': -1,
     # }
