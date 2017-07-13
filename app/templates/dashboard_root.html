@@ -23,6 +23,16 @@
        }
     </style>
 
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
   </head>
 
   <body>
@@ -41,7 +51,8 @@
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
             <li><a href="#">Home</a></li>
-            <li><a href="http://stabilitas.io/">Stabilitas</a></li>
+            <li><a href="https://medium.com/@brendan.dorsey">Blog</a></li>
+            <li><a href="#">Thresholds</a></li>
           </ul>
           <form class="navbar-form navbar-right" action="/" method='POST'>
             <input type="text" class="form-control" placeholder="YYYY-MM-DD" name="user_input">
@@ -52,14 +63,17 @@
 
     <div class="container-fluid">
       <div class="row">
-        <!-- <div class="col-sm-3 col-md-2 sidebar">
+        <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
-            <li><a href="#">Reports</a></li>
-            <li><a href="#">Analytics</a></li>
-            <li><a href="#">Export</a></li>
+            <li>&nbsp;</li>
+            <li>&nbsp;</li>
+            <li>&nbsp;</li>
+            <li class="active"><a href="http://stabilitas.io/">Stabilitas <span class="sr-only">(current)</span></a></li>
+            <li><a href="#predicted_list">Predicted Critical</a></li>
+            <li><a href="#critical_list">Critical</a></li>
+            <li><a href="#elevated_list">Elevated</a></li>
           </ul>
-          <ul class="nav nav-sidebar">
+          <!-- <ul class="nav nav-sidebar">
             <li><a href="">Nav item</a></li>
             <li><a href="">Nav item again</a></li>
             <li><a href="">One more nav</a></li>
@@ -70,16 +84,13 @@
             <li><a href="">Nav item again</a></li>
             <li><a href="">One more nav</a></li>
             <li><a href="">Another nav item</a></li>
-          </ul>
-        </div> -->
+          </ul> -->
+        </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <div class="text-muted">&nbsp;</div>
-          <div class="text-muted">&nbsp;</div>
-          <div class="text-muted">&nbsp;</div>
-          <div class="text-muted">Date Range: 2016-01-01 to 2016-12-31</div>
+          <div class="text-muted">Welcome! Please enter a date between 2016-01-01 and 2016-12-31 in the search bar above using the format shown.</div>
           <h1 class="page-header">Anomalies on {{query_date}}</h1>
 
-          <!-- <div class="row placeholders"> -->
+          <div class="row placeholders">
             <div id="map"></div>
             <script>
               function myMap() {
@@ -166,7 +177,7 @@
             <div class="text-muted">Blue Dot: Condition Elevated</div>
           <!-- </div> -->
 
-          <h2 class="sub-header">{{num_pred}} Cities predicted critical on {{query_date}}</h2>
+          <h2 class="sub-header" id="predicted_list">{{num_pred}} Cities predicted critical on {{query_date}}</h2>
           <div class="table-responsive">
             <table class="table table-hover">
               <tr>
@@ -183,7 +194,7 @@
               {% endfor %}
             </table>
           </div>
-          <h2 class="sub-header">{{num_crit}} Cities with condition critical on {{query_date}}</h2>
+          <h2 class="sub-header" id="critical_list">{{num_crit}} Cities with condition critical on {{query_date}}</h2>
           <div class="table-responsive">
             <table class="table table-hover">
               <tr>
@@ -200,7 +211,7 @@
               {% endfor %}
             </table>
           </div>
-          <h2 class="sub-header">{{num_elev}} Cities with condition elevated on {{query_date}}</h2>
+          <h2 class="sub-header" id="elevated_list">{{num_elev}} Cities with condition elevated on {{query_date}}</h2>
           <div class="table-responsive">
             <table class="table table-hover">
               <tr>

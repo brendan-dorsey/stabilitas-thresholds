@@ -1,4 +1,4 @@
-from flask import Flask, url_for, render_template, request, jsonify
+from flask import Flask, flash url_for, render_template, request, jsonify
 import json
 from collections import defaultdict
 app = Flask(__name__)
@@ -14,6 +14,7 @@ def map():
     try:
         date_lookup[key]
     except KeyError:
+        flash("Invalid query")
         return render_template(
             "dashboard_root.html",
             query_date=key,
@@ -135,7 +136,7 @@ if __name__ == '__main__':
     with open("city_lookup.json") as f:
         city_lookup = json.load(f)
 
-    print date_lookup.keys()
-    print len(date_lookup.keys())
+    # print date_lookup.keys()
+    # print len(date_lookup.keys())
 
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=False)
