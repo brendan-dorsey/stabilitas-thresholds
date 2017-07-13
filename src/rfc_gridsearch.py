@@ -1,5 +1,4 @@
 from stabilitasfinder import StabilitasFinder
-import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import time
@@ -10,7 +9,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import Pipeline
 import json
-plt.style.use("ggplot")
 
 
 def main():
