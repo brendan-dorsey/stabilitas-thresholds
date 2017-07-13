@@ -186,16 +186,16 @@ def main():
     #     'classifier__n_jobs': -1,
     # }
 
-    param_grid5 = {
-        "vectorizer__analyzer": ["word"],
-        "vectorizer__stop_words": ["english"],
-        "vectorizer__max_features": [2500],
-        "classifier__n_estimators": [100],
-        "classifier__max_depth": [1, 10, 100, None],
-        "classifier__min_samples_split": [2, 5, 10, 100, 1000],
-        "classifier__min_samples_leaf": [3],
-        "classifier__max_features": ["sqrt"],
-        "classifier__n_jobs": [-1]
+    # param_grid5 = {
+    #     "vectorizer__analyzer": ["word"],
+    #     "vectorizer__stop_words": ["english"],
+    #     "vectorizer__max_features": [2500],
+    #     "classifier__n_estimators": [100],
+    #     "classifier__max_depth": [1, 10, 100, None],
+    #     "classifier__min_samples_split": [2, 5, 10, 100, 1000],
+    #     "classifier__min_samples_leaf": [3],
+    #     "classifier__max_features": ["sqrt"],
+    #     "classifier__n_jobs": [-1]
     # }
     # grid5 = GridSearchCV(
     #     estimator=pipe,
@@ -211,25 +211,25 @@ def main():
     # print "Best AUC: ", grid5.best_score_
     # print "Best params: ", grid5.best_params_
 
-    Grid 5 Results:
-    Best AUC:  0.794240700912
-    Best params:  {
-        'vectorizer__analyzer': 'word',
-        'vectorizer__stop_words': 'english',
-        'vectorizer__max_features': 2500,
-        'classifier__n_estimators': 100,
-        'classifier__max_depth': None
-        'classifier__min_samples_split': 2,
-        'classifier__min_samples_leaf': 3,
-        'classifier__max_features': 'sqrt',
-        'classifier__n_jobs': -1,
+    # Grid 5 Results:
+    # Best AUC:  0.794240700912
+    # Best params:  {
+    #     'vectorizer__analyzer': 'word',
+    #     'vectorizer__stop_words': 'english',
+    #     'vectorizer__max_features': 2500,
+    #     'classifier__n_estimators': 100,
+    #     'classifier__max_depth': None
+    #     'classifier__min_samples_split': 2,
+    #     'classifier__min_samples_leaf': 3,
+    #     'classifier__max_features': 'sqrt',
+    #     'classifier__n_jobs': -1,
     # }
 
     param_grid6 = {
         "vectorizer__analyzer": ["word"],
         "vectorizer__stop_words": ["english"],
-        "vectorizer__max_features": [2500],
-        "classifier__n_estimators": [100],
+        "vectorizer__max_features": [500, 1000, 2500, 5000],
+        "classifier__n_estimators": [2000],
         "classifier__max_depth": [None],
         "classifier__min_samples_split": [2, 5, 10, 100],
         "classifier__min_samples_leaf": [1, 2, 3, 10],

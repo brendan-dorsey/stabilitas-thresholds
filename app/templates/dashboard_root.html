@@ -95,14 +95,21 @@
             <script>
               function myMap() {
 
+                var predicted_cities = {{ predicted_cities|tojson }}
+                var critical_cities = {{ critical_cities|tojson }}
+                var elevated_cities = {{ elevated_cities|tojson }}
+
                 var mapCanvas = document.getElementById("map");
                 var mapOptions = {
                   center: {lat: 20, lng: 0},
                   zoom: 3
                 };
                 var map = new google.maps.Map(mapCanvas,mapOptions);
+
+                // Plot circles for predicted cities
                 for (var i=0; i < {{num_pred}}; i++) {
-                  var city = new google.maps.LatLng({{predicted_locs}}[i][0], {{predicted_locs}}[i][1]);
+                  var city_info = predicted_cities[i][0] + " " + predicted_cities[i][1] + " " + predicted_cities[i][2]
+                  var city = new google.maps.LatLng(predicted_cities[i][3][0], predicted_cities[i][3][1]);
                   var circlePred = new google.maps.Circle({
                     center: city,
                     radius: 70000,
@@ -110,12 +117,17 @@
                     strokeOpacity: 1,
                     strokeWeight: 2,
                     fillColor: "#FFFFFF",
-                    fillOpacity: 0
+                    fillOpacity: 0,
+                    clickable: true,
+                    map: map
                   });
-                  circlePred.setMap(map);
+                  createClickableCircle(map, circlePred, city_info);
                 }
+
+                // Plot circles for critical cities
                 for (var i=0; i < {{num_crit}}; i++) {
-                  var city = new google.maps.LatLng({{critical_locs}}[i][0], {{critical_locs}}[i][1]);
+                  var city_info = critical_cities[i][0] + " " + critical_cities[i][1] + " " + critical_cities[i][2]
+                  var city = new google.maps.LatLng(critical_cities[i][3][0], critical_cities[i][3][1]);
                   var circleCrit = new google.maps.Circle({
                     center: city,
                     radius: 50000,
@@ -123,27 +135,17 @@
                     strokeOpacity: 1,
                     strokeWeight: 1,
                     fillColor: "#FFA500",
-                    fillOpacity: .6
+                    fillOpacity: .6,
+                    clickable: true,
+                    map: map
                   });
-                  circleCrit.setMap(map);
-
-
-                  // var infoWindow = new google.maps.InfoWindow({content: ""});
-        					// map.data.addListener('click', function(event) {
-        					// 	//show an infowindow on click
-        					// 	var busInfo = "Listener Working"
-        					// 	infoWindow.setContent(busInfo);
-        					// 	var anchor = new google.maps.MVCObject();
-        					// 	anchor.set("position",event.latLng);
-        					// 	infoWindow.open(map,anchor);
-        					// });
+                  createClickableCircle(map, circleCrit, city_info);
                 }
-                for (var i=0; i < {{num_elev}}; i++) {
-                  var city_name = "{{elevated_cities[0][0]}}"
-                  // var foo = {{elevated_cities}}[i][0]
-                  // debugger;
 
-                  var city = new google.maps.LatLng({{elevated_locs}}[i][0], {{elevated_locs}}[i][1]);
+                // Plot circles for elevated cities
+                for (var i=0; i < {{num_elev}}; i++) {
+                  var city_info = elevated_cities[i][0] + " " + elevated_cities[i][1] + " " + elevated_cities[i][2]
+                  var city = new google.maps.LatLng(elevated_cities[i][3][0], elevated_cities[i][3][1]);
                   var circleElev = new google.maps.Circle({
                     center: city,
                     radius: 45000,
@@ -153,21 +155,20 @@
                     fillColor: "#0000FF",
                     fillOpacity: .5,
                     clickable: true,
-                    id: i
+                    map: map
                   });
-                  circleElev.setMap(map);
-                  // debugger;
-                  var infowindow = new google.maps.InfoWindow({
-                    content: city_name
-                  });
-                  //
-                  google.maps.event.addListener(circleElev, 'mouseover', function(event) {
-                    infowindow.setPosition(circleElev.getCenter());
-                    console.log(city)
-                    console.log(event.feature.getId())
-                    infowindow.open(map);
-                  });
+                  createClickableCircle(map, circleElev, city_info);
                 }
+              }
+              function createClickableCircle(map, circle, info){
+                var infowindow =new google.maps.InfoWindow({
+                  content: info
+                });
+                google.maps.event.addListener(circle, 'click', function(ev) {
+                  // alert(infowindow.content);
+                  infowindow.setPosition(circle.getCenter());
+                  infowindow.open(map);
+                });
               }
               </script>
             <script async defer
@@ -187,7 +188,7 @@
                 <th>Probability of Critical Event</th>
                 <th>Most Critical Report</th>
               </tr>
-              {% for city, proba, title in predicted_cities %}
+              {% for city, proba, title, _ in predicted_cities %}
               <tr>
                 <td>{{city}}</td>
                 <td>{{proba}}</td>
@@ -204,7 +205,7 @@
                 <th>Probability of Critical Event</th>
                 <th>Most Critical Report</th>
               </tr>
-              {% for city, proba, title in critical_cities %}
+              {% for city, proba, title, _ in critical_cities %}
               <tr>
                 <td>{{city}}</td>
                 <td>{{proba}}</td>
@@ -221,7 +222,7 @@
                 <th>Probability of Critical Event</th>
                 <th>Most Critical Report</th>
               </tr>
-              {% for city, proba, title in elevated_cities %}
+              {% for city, proba, title, _ in elevated_cities %}
               <tr>
                 <td>{{city}}</td>
                 <td>{{proba}}</td>

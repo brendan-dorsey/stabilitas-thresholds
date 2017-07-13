@@ -95,17 +95,32 @@ def map():
             elevated_titles.append("None predicted critical")
 
     predicted_combos = sorted(
-        zip(predicted_cities, predicted_probas, predicted_titles),
+        zip(
+            predicted_cities,
+            predicted_probas,
+            predicted_titles,
+            predicted_locs,
+        ),
         key=lambda x: x[1],
         reverse=True
     )
     critical_combos = sorted(
-        zip(critical_cities, critical_probas, critical_titles),
+        zip(
+            critical_cities,
+            critical_probas,
+            critical_titles,
+            critical_locs,
+        ),
         key=lambda x: x[1],
         reverse=True
     )
     elevated_combos = sorted(
-        zip(elevated_cities, elevated_probas, elevated_titles),
+        zip(
+            elevated_cities,
+            elevated_probas,
+            elevated_titles,
+            elevated_locs
+        ),
         key=lambda x: x[1],
         reverse=True
     )
@@ -139,4 +154,4 @@ if __name__ == '__main__':
     # print date_lookup.keys()
     # print len(date_lookup.keys())
 
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    app.run(host="0.0.0.0", port=8080, debug=True)
