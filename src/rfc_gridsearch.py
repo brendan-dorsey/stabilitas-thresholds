@@ -231,7 +231,7 @@ def main():
         "classifier__max_depth": [None],
         "classifier__min_samples_split": [2, 5, 10, 100],
         "classifier__min_samples_leaf": [1, 2, 3, 10],
-        "classifier__max_features": ["sqrt"],
+        "classifier__max_features": ["sqrt", "log2", 25, 100],
         "classifier__n_jobs": [-1]
     }
     grid6 = GridSearchCV(
@@ -247,6 +247,12 @@ def main():
 
     print "Best AUC: ", grid6.best_score_
     print "Best params: ", grid6.best_params_
+
+    with open("data/best_params.json", mode="w") as f:
+        json.dump(grid6.best_params_, f)
+
+    with open("data/best_score.json", mode="w") as f:
+        json.dump(grid6.best_score, f)
 
     # Grid 6 Results:
     # Best AUC:
