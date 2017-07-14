@@ -258,8 +258,16 @@ class StabilitasFilter(object):
         else:
             city_labels = []
             city_label_indices = []
+            total_reports = len(self.reports_df)
 
-            for report in self.reports_df["lat_long"]:
+            for i, report in enumerate(self.reports_df["lat_long"]):
+                if i % 1000 == 0:
+                    current_time = time.time() - start
+                    total_time = (current_time * total_cities) / (i+1)
+                    print "     Estimated {0} seconds remaining for {1} cities".format(
+                        int(round(total_time - current_time)),
+                        total_reports - i
+                    )
                 distances = []
                 for city in self.cities_df["lat_long"]:
                     distances.append(haversine(report, city))

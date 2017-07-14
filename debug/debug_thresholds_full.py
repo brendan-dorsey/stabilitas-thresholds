@@ -29,11 +29,12 @@ def main():
         resample_size=3,
         window_size="1w",
         anomaly_threshold=1,
-        load_city_labels=True,
+        load_city_labels=False,
         city_labels_path="data/2016_city_labels.csv",
         quadratic=True,
-        save_labels=False,
+        save_labels=True,
     )
+    exit()
 
     anomalies_df = filter_layer.get_anomaly_reports(
         write_to_file=True,
