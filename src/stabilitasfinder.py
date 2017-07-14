@@ -192,7 +192,7 @@ class StabilitasFinder(object):
         self.confusion_matrix = confusion_matrix(self.y_test, self.predicted)
         return self.predicted
 
-    def cross_val_predict(self, thresholds=[0.2164], model_type="gbc"):
+    def cross_val_predict(self, thresholds=None, model_type="rfc"):
         """
         Cross validate and predict across full dataset.
         Default model is Gradient Boosting Classifier.
@@ -223,7 +223,7 @@ class StabilitasFinder(object):
                 subsample=0.3
             ),
             "rfc": RandomForestClassifier(
-                n_estimators=2000,
+                n_estimators=3200,
                 n_jobs=-1,
                 max_depth=None,
                 min_samples_split=10,
@@ -235,6 +235,11 @@ class StabilitasFinder(object):
                 probability=True,
             ),
         }
+        if thresholds == None:
+            if model_type == "gbc":
+                thresholds = [0.2164]
+            elif model_type == "rfc":
+                thresholds = [0.2044]
 
         for train_index, test_index in kf.split(X):
             X_train, X_test = X[train_index], X[test_index]
@@ -281,6 +286,10 @@ class StabilitasFinder(object):
                 daily_critical = series.resample("d").sum()
                 for day in daily_critical.index:
                     key = str(day.date())
+                    try:
+                        self.date_lookup[key]
+                    except KeyError:
+                        self.date_lookup[key] = [[]]
                     if len(self.date_lookup[key]) == 1:
                         self.date_lookup[key].append([])
                     if daily_critical[day] > 0.0:
@@ -324,4 +333,7 @@ class StabilitasFinder(object):
                     index = np.argmax(day_reports_df["predicted_probas"])
                     proba = day_reports_df.loc[index, "predicted_probas"]
                     title = day_reports_df.loc[index, "title"]
-                    self.city_lookup[city][key] = (proba, title)
+                    try:
+                        self.city_lookup[city][key] = (proba, title)
+                    except KeyError:
+                        self.city_lookup[city][key] = (proba, title)

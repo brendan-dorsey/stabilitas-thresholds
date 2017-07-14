@@ -6,18 +6,61 @@ import time
 from datetime import datetime
 from sklearn.metrics import auc
 plt.style.use("ggplot")
+import json
 
 
 def main():
     """
     Function to test implementation of Stabilitas Finder.
     """
-    finder = StabilitasFinder()
-    finder.load_data(source="data/OCT_flagged_reports_vol_1std.csv")
+    window = "1wk"
+    model_type = "rfc"
 
-    finder.label_critical_reports()
-    finder.cross_val_predict()
-    # finder.extract_critical_titles()
+    with open("data/2016_quad_{0}_date_lookup.json".format(window)) as f:
+        date_lookup = json.load(f)
+
+    with open("data/2016_quad_{0}_city_lookup.json".format(window)) as f:
+        city_lookup = json.load(f)
+
+    finder_start = time.time()
+    finder_layer = StabilitasFinder()
+    finder_layer.load_data(
+        source="data/2016_flagged_reports_quad_1std_{0}.csv".format(window),
+        date_lookup=date_lookup,
+        city_lookup=city_lookup
+    )
+
+    finder_layer.label_critical_reports(cutoff=30)
+
+    finder_layer.cross_val_predict(model_type=model_type)
+    finder_layer._labeled_critical_cities_by_day()
+    finder_layer._predicted_critical_cities_by_day()
+    finder_layer._most_critical_report_per_city_per_day()
+
+    finder_finish = time.time()
+
+    print ""
+    print "Finder finished at {0} in {1} seconds.".format(
+                                    datetime.now().time(),
+                                    finder_finish-finder_start
+    )
+
+    with open("app/2016_quad_{0}_{1}_date_lookup.json".format(window, model_type), mode="w") as f:
+        json.dump(finder_layer.date_lookup, f)
+
+    city_lookup = finder_layer.city_lookup
+
+    drop_keys = ["timeseries", "anomalies"]
+    for key in drop_keys:
+        for sub_dict in city_lookup.values():
+            if isinstance(sub_dict, dict):
+                try:
+                    del sub_dict[key]
+                except KeyError:
+                    pass
+
+    with open("app/2016_quad_{0}_{1}_city_lookup.json".format(window, model_type), mode="w") as f:
+        json.dump(city_lookup, f)
 
 
 

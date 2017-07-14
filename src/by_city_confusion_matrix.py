@@ -8,11 +8,14 @@ plt.style.use("ggplot")
 
 
 def main():
-    with open("app/date_lookup.json", "r") as f:
+    with open("data/2016_quad_1wk_date_lookup.json", "r") as f:
         date_lookup = json.load(f)
 
     dates = date_lookup.keys()
     print len(dates)
+
+    print date_lookup["2016-05-16"]
+    exit()
 
     cities = set()
     for date in dates:
@@ -40,6 +43,7 @@ def main():
         except:
             print date
             print date_lookup[date]
+            break
 
     conf_mat = confusion_matrix(y_true, y_pred)
     # Transpoition of sklearn confusion matrix to this format:
