@@ -1,38 +1,40 @@
+from stabilitasfilter import StabilitasFilter
 from stabilitasfinder import StabilitasFinder
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import time
 from datetime import datetime
-from sklearn.metrics import auc
-plt.style.use("ggplot")
 import json
+from sklearn.metrics import roc_auc_score, confusion_matrix, roc_curve, auc
+from itertools import combinations, product
+plt.style.use("ggplot")
 
 
 def main():
     """
     Function to test implementation of Stabilitas Finder.
     """
-    window = "1wk"
-    model_type = "rfc"
+    # window = "1wk"
+    # model_type = "rfc"
 
-    with open("data/2016_quad_{0}_date_lookup.json".format(window)) as f:
+    with open("debug/filter_date_lookup.json") as f:
         date_lookup = json.load(f)
 
-    with open("data/2016_quad_{0}_city_lookup.json".format(window)) as f:
+    with open("debug/filter_city_lookup.json") as f:
         city_lookup = json.load(f)
 
     finder_start = time.time()
     finder_layer = StabilitasFinder()
     finder_layer.load_data(
-        source="data/2016_flagged_reports_quad_1std_{0}.csv".format(window),
+        source="debug/flagged_reports_quad_1wk.csv",
         date_lookup=date_lookup,
         city_lookup=city_lookup
     )
 
     finder_layer.label_critical_reports(cutoff=30)
 
-    finder_layer.cross_val_predict(model_type=model_type)
+    finder_layer.cross_val_predict()
     finder_layer._labeled_critical_cities_by_day()
     finder_layer._predicted_critical_cities_by_day()
     finder_layer._most_critical_report_per_city_per_day()
@@ -45,7 +47,7 @@ def main():
                                     finder_finish-finder_start
     )
 
-    with open("app/2016_quad_{0}_{1}_date_lookup.json".format(window, model_type), mode="w") as f:
+    with open("debug/finder_date_lookup.json", mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
     city_lookup = finder_layer.city_lookup
@@ -59,21 +61,45 @@ def main():
                 except KeyError:
                     pass
 
-    with open("app/2016_quad_{0}_{1}_city_lookup.json".format(window, model_type), mode="w") as f:
+    with open("debug/finder_city_lookup.json", mode="w") as f:
         json.dump(city_lookup, f)
 
+    y_true = finder.flagged_df["critical"].values
+    y_pred = finder.flagged_df["predicted"].values
 
-
-
-
-    # conf_mat = finder.confusion_matrix
+    conf_mat = finder.confusion_matrix
     # Transpoition of sklearn confusion matrix to my preferred format:
     # TP  FN
     # FP  TN
-    # conf_mat = [[conf_mat[1][1], conf_mat[1][0]], [conf_mat[0][1], conf_mat[0][0]]]
-    #
-    # for row in conf_mat:
-    #     print row
+    conf_mat = [
+        [conf_mat[1][1], conf_mat[1][0]],
+        [conf_mat[0][1], conf_mat[0][0]]
+    ]
+
+    # True Positive Rate: TP / TP + FN
+    tpr = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[0][1] + 1)
+    # False Positive Rate: FP / FP + TN
+    fpr = float(conf_mat[1][0]) / (conf_mat[1][0] + conf_mat[1][1] + 1)
+    # Precision: TP / TP + FP
+    precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0] + 1)
+    # False Discovery Rate: FP / TP + FP
+    fdr = float(conf_mat[1][0]) / (conf_mat[0][0] + conf_mat[1][0] + 1)
+    if (precision + tpr) == 0:
+        f1 = 0
+    else:
+        f1 = 2 * (precision * tpr) / (precision + tpr)
+
+    print "Confusion Matrix:"
+    for row in conf_mat:
+        print "     ", row
+
+    print ""
+    print "AUC: ", roc_auc_score(y_true, y_pred)
+    print "Precision: ", precision
+    print "True Positive Rate (Recall): ", tpr
+    print "False Positive Rate: ", fpr
+    print "False Discovery Rate: ", fdr
+    print "F1 Score: ", f1
 
     ########################################
     ########################################

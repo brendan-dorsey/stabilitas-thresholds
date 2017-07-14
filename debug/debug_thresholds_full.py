@@ -21,23 +21,23 @@ def main():
     cities_filename = "debug/cities300000.csv"
     filter_layer = StabilitasFilter(cities_filename, cleaned=True)
 
-    data_filename = "debug/reports_12DEC16-26DEC16.tsv"
+    data_filename = "data/2016/all_2016.txt"
     filter_layer.fit(
         data_filename,
-        start_datetime="2016-12-12",
-        end_datetime="2016-12-27",
+        start_datetime="2016-01-01",
+        end_datetime="2017-01-01",
         resample_size=3,
         window_size="1w",
         anomaly_threshold=1,
         load_city_labels=True,
-        city_labels_path="debug/city_labels.csv",
+        city_labels_path="data/2016_city_labels.csv",
         quadratic=True,
         save_labels=False,
     )
 
     anomalies_df = filter_layer.get_anomaly_reports(
         write_to_file=True,
-        filename="debug/flagged_reports_quad_1wk.csv"
+        filename="debug/flagged_reports_quad_1wk_full.csv"
         )
     date_lookup = filter_layer.date_lookup
     city_lookup = filter_layer.city_lookup
@@ -51,10 +51,10 @@ def main():
                 except KeyError:
                     pass
 
-    with open("debug/filter_date_lookup.json", mode="w") as f:
+    with open("debug/filter_full_date_lookup.json", mode="w") as f:
         json.dump(date_lookup, f)
 
-    with open("debug/filter_city_lookup.json", mode="w") as f:
+    with open("debug/filter_full_city_lookup.json", mode="w") as f:
         json.dump(city_lookup, f)
 
     filter_finish = time.time()
@@ -91,7 +91,7 @@ def main():
                                     finder_finish-filter_start
     )
 
-    with open("debug/debug_final_date_lookup.json", mode="w") as f:
+    with open("debug/debug_full_final_date_lookup.json", mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
     city_lookup = finder_layer.city_lookup
@@ -105,7 +105,7 @@ def main():
                 except KeyError:
                     pass
 
-    with open("debug/debug_final_city_lookup.json", mode="w") as f:
+    with open("debug/debug_full_final_city_lookup.json", mode="w") as f:
         json.dump(city_lookup, f)
 
     y_true = finder_layer.flagged_df["critical"].values

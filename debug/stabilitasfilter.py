@@ -458,8 +458,9 @@ class StabilitasFilter(object):
             if i % 10 == 0:
                 current_time = time.time() - start
                 total_time = (current_time * total_cities) / (i+1)
-                print "Approximately {} seconds remaining.".format(
-                    round(total_time - current_time)
+                print "     Estimated {0} seconds remaining for {1} cities".format(
+                    int(round(total_time - current_time)),
+                    total_cities - i
                 )
 
             try:
