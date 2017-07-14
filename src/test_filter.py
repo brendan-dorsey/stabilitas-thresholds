@@ -32,30 +32,47 @@ def main():
         save_labels=False
     )
 
-    anomalies_df = filter_layer.get_anomaly_reports(
-        write_to_file=True,
-        filename="data/2016_flagged_reports_quad_1std_4wk.csv"
-        )
+    # filter_layer.reports_df = pd.read_csv("data/2016_flagged_reports_quad_1std_1wk.csv")
 
+
+    #
+    # anomalies_df = filter_layer.get_anomaly_reports(
+    #     write_to_file=True,
+    #     filename="data/2016_flagged_reports_quad_1std_4wk.csv"
+    #     )
+    #
     date_lookup = filter_layer.date_lookup
     city_lookup = filter_layer.city_lookup
-
-    filter_finish = time.time()
-    print "Filter finished at {0} in {1} seconds.".format(
-                                    datetime.now().time(),
-                                    filter_finish-filter_start
-                                )
-
+    #
+    # filter_finish = time.time()
+    # print "Filter finished at {0} in {1} seconds.".format(
+    #                                 datetime.now().time(),
+    #                                 filter_finish-filter_start
+    #                             )
+    #
     with open("data/2016_quad_4w_date_lookup.json", mode="w") as f:
-        json.dump(finder_layer.date_lookup, f)
+        json.dump(date_lookup, f)
 
     truncated_city_lookup = {}
-    for city in finder_layer.city_lookup.keys():
+    for city in city_lookup.keys():
         truncated_city_lookup[city] = {
-            "location": finder_layer.city_lookup[city]["location"]
+            "location": city_lookup[city]["location"]
         }
     with open("data/2016_quad_4w_city_lookup.json", mode="w") as f:
         json.dump(truncated_city_lookup, f)
+
+
+    # _load_cities
+    # _build_cities_timeseries(quadratic=True)
+    # _find_anomalies
+    # _anomalies_by_day
+
+    # cities_filename = "data/cities300000.csv"
+    # filter_layer = StabilitasFilter(cities_filename, cleaned=True)
+    # filter_layer._load_data("data/reports_12DEC16-26DEC16.tsv", precalculated=False, save_labels=False)
+    # filter_layer.reports_df = pd.read_csv("data/2016_flagged_reports_quad_1std_1wk.csv")
+    # filter_layer._build_cities_timeseries(quadratic=True)
+
 
 
 
