@@ -1,6 +1,6 @@
 from stabilitasfilter import StabilitasFilter
 from stabilitasfinder import StabilitasFinder
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import time
@@ -8,13 +8,14 @@ from datetime import datetime
 import json
 from sklearn.metrics import roc_auc_score, confusion_matrix, roc_curve
 from itertools import combinations, product
-plt.style.use("ggplot")
+
 
 
 def main():
     """
     Main function to run both layers of Stabilitas Thresholds app.
     """
+    window_size = "1w"
     filter_start = time.time()
     print "Started at {}.".format(datetime.now().time())
     # Filepaths assume running this script from stabilitas-thresholds/ dir
@@ -27,7 +28,7 @@ def main():
         start_datetime="2016-01-01",
         end_datetime="2017-01-01",
         resample_size=3,
-        window_size="1w",
+        window_size=window_size,
         anomaly_threshold=1,
         load_city_labels=True,
         city_labels_path="data/2016_city_labels.csv",
@@ -38,7 +39,7 @@ def main():
 
     anomalies_df = filter_layer.get_anomaly_reports(
         write_to_file=True,
-        filename="debug/flagged_reports_quad_1wk_full.csv"
+        filename="debug/flagged_reports_quad_{}_full.csv".format(window_size)
         )
     date_lookup = filter_layer.date_lookup
     city_lookup = filter_layer.city_lookup
@@ -52,10 +53,10 @@ def main():
                 except KeyError:
                     pass
 
-    with open("debug/filter_full_date_lookup.json", mode="w") as f:
+    with open("debug/filter_full_date_lookup_{}.json".format(window_size), mode="w") as f:
         json.dump(date_lookup, f)
 
-    with open("debug/filter_full_city_lookup.json", mode="w") as f:
+    with open("debug/filter_full_city_lookup_{}.json".format(window_size), mode="w") as f:
         json.dump(city_lookup, f)
 
     filter_finish = time.time()
@@ -92,7 +93,7 @@ def main():
                                     finder_finish-filter_start
     )
 
-    with open("debug/debug_full_final_date_lookup.json", mode="w") as f:
+    with open("debug/debug_full_final_date_lookup_{}.json".format(window_size), mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
     city_lookup = finder_layer.city_lookup
@@ -106,7 +107,7 @@ def main():
                 except KeyError:
                     pass
 
-    with open("debug/debug_full_final_city_lookup.json", mode="w") as f:
+    with open("debug/debug_full_final_city_lookup_{}.json".format(window_size), mode="w") as f:
         json.dump(city_lookup, f)
 
     y_true = finder_layer.flagged_df["critical"].values
