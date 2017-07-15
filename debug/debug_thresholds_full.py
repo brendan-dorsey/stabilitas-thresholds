@@ -34,7 +34,7 @@ def main():
         quadratic=True,
         save_labels=True,
     )
-    exit()
+
 
     anomalies_df = filter_layer.get_anomaly_reports(
         write_to_file=True,

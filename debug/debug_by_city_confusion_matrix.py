@@ -8,7 +8,7 @@ plt.style.use("ggplot")
 
 
 def main():
-    with open("debug/debug_final_date_lookup.json", "r") as f:
+    with open("debug/debug_full_final_date_lookup.json", "r") as f:
         date_lookup = json.load(f)
 
     dates = date_lookup.keys()
@@ -52,13 +52,13 @@ def main():
     ]
 
     # True Positive Rate: TP / TP + FN
-    tpr = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[0][1] + 1)
+    tpr = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[0][1])
     # False Positive Rate: FP / FP + TN
-    fpr = float(conf_mat[1][0]) / (conf_mat[1][0] + conf_mat[1][1] + 1)
+    fpr = float(conf_mat[1][0]) / (conf_mat[1][0] + conf_mat[1][1])
     # Precision: TP / TP + FP
-    precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0] + 1)
+    precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0])
     # False Discovery Rate: FP / TP + FP
-    fdr = float(conf_mat[1][0]) / (conf_mat[0][0] + conf_mat[1][0] + 1)
+    fdr = float(conf_mat[1][0]) / (conf_mat[0][0] + conf_mat[1][0])
     if (precision + tpr) == 0:
         f1 = 0
     else:

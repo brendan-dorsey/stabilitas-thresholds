@@ -19,30 +19,35 @@ def main():
     cities_filename = "data/cities300000.csv"
     filter_layer = StabilitasFilter(cities_filename, cleaned=True)
 
-    data_filename = "data/2016/all_2016.txt"
+    data_filename = "debug/reports_12DEC16-26DEC16.tsv"
     filter_layer.fit(
         data_filename,
-        start_datetime="2016-01-01",
-        end_datetime="2017-01-01",
+        start_datetime="2016-12-12",
+        end_datetime="2016-12-27",
         resample_size=3,
-        window_size="4w",
+        window_size="1w",
         anomaly_threshold=1,
-        precalculated=True,
+        load_city_labels=True,
+        city_labels_path="debug/DEC_city_labels.csv",
         quadratic=True,
-        save_labels=False
+        save_labels=False,
     )
 
     # filter_layer.reports_df = pd.read_csv("data/2016_flagged_reports_quad_1std_1wk.csv")
 
 
-    #
-    # anomalies_df = filter_layer.get_anomaly_reports(
-    #     write_to_file=True,
-    #     filename="data/2016_flagged_reports_quad_1std_4wk.csv"
-    #     )
-    #
-    date_lookup = filter_layer.date_lookup
-    city_lookup = filter_layer.city_lookup
+
+    anomalies_df = filter_layer.get_anomaly_reports(
+        write_to_file=False,
+        filename=None
+        )
+
+    print len(anomalies_df["anomalous"])
+
+    exit()
+
+    # date_lookup = filter_layer.date_lookup
+    # city_lookup = filter_layer.city_lookup
     #
     # filter_finish = time.time()
     # print "Filter finished at {0} in {1} seconds.".format(
@@ -50,16 +55,16 @@ def main():
     #                                 filter_finish-filter_start
     #                             )
     #
-    with open("data/2016_quad_4w_date_lookup.json", mode="w") as f:
-        json.dump(date_lookup, f)
-
-    truncated_city_lookup = {}
-    for city in city_lookup.keys():
-        truncated_city_lookup[city] = {
-            "location": city_lookup[city]["location"]
-        }
-    with open("data/2016_quad_4w_city_lookup.json", mode="w") as f:
-        json.dump(truncated_city_lookup, f)
+    # with open("data/2016_quad_4w_date_lookup.json", mode="w") as f:
+    #     json.dump(date_lookup, f)
+    #
+    # truncated_city_lookup = {}
+    # for city in city_lookup.keys():
+    #     truncated_city_lookup[city] = {
+    #         "location": city_lookup[city]["location"]
+    #     }
+    # with open("data/2016_quad_4w_city_lookup.json", mode="w") as f:
+    #     json.dump(truncated_city_lookup, f)
 
 
     # _load_cities

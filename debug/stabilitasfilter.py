@@ -5,6 +5,8 @@ from itertools import izip
 from collections import defaultdict
 import time
 import datetime
+from multiprocessing import Process, Pool, cpu_count
+from functools import partial
 
 
 class StabilitasFilter(object):
@@ -263,8 +265,8 @@ class StabilitasFilter(object):
             for i, report in enumerate(self.reports_df["lat_long"]):
                 if i % 1000 == 0:
                     current_time = time.time() - start
-                    total_time = (current_time * total_cities) / (i+1)
-                    print "     Estimated {0} seconds remaining for {1} cities".format(
+                    total_time = (current_time * total_reports) / (i+1)
+                    print "     Estimated {0} seconds remaining for {1} reports".format(
                         int(round(total_time - current_time)),
                         total_reports - i
                     )
@@ -274,12 +276,12 @@ class StabilitasFilter(object):
                 city_label_indices.append(np.argmin(distances))
 
             for index in city_label_indices:
-                city_labels.append(self.cities_df.ix[index, "name"])
+                city_labels.append(self.cities_df.loc[index, "name"])
 
         if save_labels:
             labels = pd.DataFrame(city_labels)
             labels.to_csv(
-                "data/city_labels.csv",
+                "debug/DEC_city_labels.csv",
                 header=False,
                 mode="w"
             )
@@ -462,25 +464,32 @@ class StabilitasFilter(object):
         idx = pd.IndexSlice
         total_cities = len(self.city_lookup.keys())
 
-        for i, city in enumerate(self.city_lookup.keys()):
-            if i % 10 == 0:
-                current_time = time.time() - start
-                total_time = (current_time * total_cities) / (i+1)
-                print "     Estimated {0} seconds remaining for {1} cities".format(
-                    int(round(total_time - current_time)),
-                    total_cities - i
-                )
+        # for i, city in enumerate(self.city_lookup.keys()):
+        #     if i % 10 == 0:
+        #         current_time = time.time() - start
+        #         total_time = (current_time * total_cities) / (i+1)
+        #         print "     Estimated {0} seconds remaining for {1} cities".format(
+        #             int(round(total_time - current_time)),
+        #             total_cities - i
+        #         )
+        #
+        #     anomalies = self.city_lookup[city]["anomalies"]
+        #     for timestamp in anomalies.index:
+        #         window_start = timestamp - time_delta
+        #         self.reports_df.loc[
+        #             idx[window_start:timestamp, city, :],
+        #             idx["anomalous"]
+        #         ] = 1
 
-            try:
-                anomalies = self.city_lookup[city]["anomalies"]
-                for timestamp in anomalies.index:
-                    window_start = timestamp - time_delta
-                    self.reports_df.loc[
-                        idx[window_start:timestamp, city, :],
-                        idx["anomalous"]
-                    ] = 1
-            except KeyError:
-                continue
+        # Multiprocessing attempt
+        self.reports_df = pooled_labeling(
+            idx,
+            time_delta,
+            self.city_lookup,
+            self.reports_df,
+        )
+
+
 
         anomalies_df = self.reports_df[self.reports_df["anomalous"] == 1]
         if write_to_file:
@@ -508,3 +517,41 @@ def severity_score_quadratic(severity_rating):
         return 25
     else:
         return 4
+
+def label_anomalous_reports(
+    idx,
+    time_delta,
+    dictionary,
+    dataframe,
+):
+    for city in dictionary.keys():
+        try:
+            anomalies = dictionary[city]["anomalies"]
+            for timestamp in anomalies.index:
+                window_start = timestamp - time_delta
+                dataframe.loc[
+                    idx[window_start:timestamp, city, :],
+                    idx["anomalous"]
+                ] = 1
+        except KeyError:
+            continue
+    return dataframe
+
+def pooled_labeling(
+    idx,
+    time_delta,
+    dictionary,
+    dataframe,
+):
+    df_split = np.array_split(dataframe, cpu_count())
+    pool = Pool(cpu_count())
+    function = partial(
+        label_anomalous_reports,
+        idx,
+        time_delta,
+        dictionary,
+    )
+    dataframe = pd.concat(pool.map(function, df_split))
+    pool.close()
+    pool.join()
+    return dataframe
