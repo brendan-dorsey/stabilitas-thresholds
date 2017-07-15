@@ -8,7 +8,7 @@ plt.style.use("ggplot")
 
 
 def main():
-    with open("debug/debug_full_final_date_lookup.json", "r") as f:
+    with open("app/date_lookup.json", "r") as f:
         date_lookup = json.load(f)
 
     dates = date_lookup.keys()
@@ -20,8 +20,9 @@ def main():
             for city in date_lookup[date][0]:
                 cities.add(city)
         except IndexError:
-            print date
-            print date_lookup[date]
+            # print date
+            # print date_lookup[date]
+            continue
 
     city_date_pairs = product(cities, dates)
 
@@ -38,9 +39,9 @@ def main():
             else:
                 y_pred.append(0)
         except:
-            print date
-            print date_lookup[date]
-            break
+            # print date
+            # print date_lookup[date]
+            continue
 
     conf_mat = confusion_matrix(y_true, y_pred)
     # Transpoition of sklearn confusion matrix to this format:
@@ -76,10 +77,10 @@ def main():
     print "False Discovery Rate: ", fdr
     print "F1 Score: ", f1
 
-    t, f, th = roc_curve(y_true, y_pred)
-    plt.plot(t, f, label="ROC")
-    plt.legend()
-    plt.show()
+    # t, f, th = roc_curve(y_true, y_pred)
+    # plt.plot(t, f, label="ROC")
+    # plt.legend()
+    # plt.show()
 
     ########################
     ###  11 JUL RESULTS  ###

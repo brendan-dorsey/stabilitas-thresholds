@@ -18,16 +18,16 @@ def main():
     # window = "1wk"
     # model_type = "rfc"
 
-    with open("debug/filter_date_lookup.json") as f:
+    with open("debug/filter_full_date_lookup.json") as f:
         date_lookup = json.load(f)
 
-    with open("debug/filter_city_lookup.json") as f:
+    with open("debug/filter_full_city_lookup.json") as f:
         city_lookup = json.load(f)
 
     finder_start = time.time()
     finder_layer = StabilitasFinder()
     finder_layer.load_data(
-        source="debug/flagged_reports_quad_1wk.csv",
+        source="debug/flagged_reports_quad_1wk_full.csv",
         date_lookup=date_lookup,
         city_lookup=city_lookup
     )
@@ -47,7 +47,7 @@ def main():
                                     finder_finish-finder_start
     )
 
-    with open("debug/finder_date_lookup.json", mode="w") as f:
+    with open("debug/debug_full_final_date_lookup.json", mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
     city_lookup = finder_layer.city_lookup
@@ -61,7 +61,7 @@ def main():
                 except KeyError:
                     pass
 
-    with open("debug/finder_city_lookup.json", mode="w") as f:
+    with open("debug/debug_full_final_city_lookup.json", mode="w") as f:
         json.dump(city_lookup, f)
 
     y_true = finder.flagged_df["critical"].values

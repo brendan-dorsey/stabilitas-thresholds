@@ -7,6 +7,8 @@ import time
 import datetime
 from multiprocessing import Process, Pool, cpu_count
 from functools import partial
+import random
+
 
 
 class StabilitasFilter(object):
@@ -524,17 +526,22 @@ def label_anomalous_reports(
     dictionary,
     dataframe,
 ):
-    for city in dictionary.keys():
-        try:
-            anomalies = dictionary[city]["anomalies"]
-            for timestamp in anomalies.index:
-                window_start = timestamp - time_delta
-                dataframe.loc[
-                    idx[window_start:timestamp, city, :],
-                    idx["anomalous"]
-                ] = 1
-        except KeyError:
-            continue
+    start = time.time()
+    city = dataframe["city"].unique()[0]
+    # trigger = random.random()
+    # if trigger < 0.:
+    #     print "Labelling {}".format(city)
+    try:
+        anomalies = dictionary[city]["anomalies"]
+        for timestamp in anomalies.index:
+            window_start = timestamp - time_delta
+            dataframe.loc[
+                idx[window_start:timestamp, city, :],
+                idx["anomalous"]
+            ] = 1
+    except KeyError:
+        pass
+    print "     Done with {0} in {1} seconds.".format(city, time.time()-start)
     return dataframe
 
 def pooled_labeling(
@@ -543,7 +550,14 @@ def pooled_labeling(
     dictionary,
     dataframe,
 ):
-    df_split = np.array_split(dataframe, cpu_count())
+    start = time.time()
+    print "Splitting dataframe for labelling..."
+    df_split = [ dataframe[dataframe["city"] == city ]
+        for city in dataframe["city"].unique()
+    ]
+    print "     Done splitting in {} seconds.".format(time.time()-start)
+
+    
     pool = Pool(cpu_count())
     function = partial(
         label_anomalous_reports,

@@ -208,7 +208,7 @@ class StabilitasFinder(object):
             stop_words="english",
             max_features=2500
         )
-        kf = KFold(n_splits=3, shuffle=False)
+        kf = KFold(n_splits=5, shuffle=False)
         cv_probas = []
         cv_predicted = []
         models = {
@@ -223,10 +223,10 @@ class StabilitasFinder(object):
                 subsample=0.3
             ),
             "rfc": RandomForestClassifier(
-                n_estimators=32,
+                n_estimators=1000,
                 n_jobs=-1,
                 max_depth=None,
-                min_samples_split=10,
+                min_samples_split=3,
                 min_samples_leaf=1,
                 max_features=100
             ),
@@ -241,7 +241,14 @@ class StabilitasFinder(object):
             elif model_type == "rfc":
                 thresholds = [0.2044]
 
-        for train_index, test_index in kf.split(X):
+        for i, train_index, test_index in enumerate(kf.split(X)):
+            if i > 0:
+                    current_time = time.time() - start
+                    total_time = (current_time * 5) / (i+1)
+                    print "     Estimated {0} seconds remaining for {1} more folds.".format(
+                        int(round(total_time - current_time)),
+                        5 - i
+                    )
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
             X_train = vectorizer.fit_transform(X_train)

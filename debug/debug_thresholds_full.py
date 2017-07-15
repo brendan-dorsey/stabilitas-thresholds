@@ -29,7 +29,7 @@ def main():
         resample_size=3,
         window_size="1w",
         anomaly_threshold=1,
-        load_city_labels=False,
+        load_city_labels=True,
         city_labels_path="data/2016_city_labels.csv",
         quadratic=True,
         save_labels=True,
@@ -129,6 +129,81 @@ def main():
     precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0] + 1)
     # False Discovery Rate: FP / TP + FP
     fdr = float(conf_mat[1][0]) / (conf_mat[0][0] + conf_mat[1][0] + 1)
+    if (precision + tpr) == 0:
+        f1 = 0
+    else:
+        f1 = 2 * (precision * tpr) / (precision + tpr)
+
+    print "Confusion Matrix:"
+    for row in conf_mat:
+        print "     ", row
+
+    print ""
+    print "AUC: ", roc_auc_score(y_true, y_pred)
+    print "Precision: ", precision
+    print "True Positive Rate (Recall): ", tpr
+    print "False Positive Rate: ", fpr
+    print "False Discovery Rate: ", fdr
+    print "F1 Score: ", f1
+
+    ########################################
+    ########################################
+    ##                                    ##
+    ##  Code for by city by day metrics   ##
+    ##                                    ##
+    ########################################
+    ########################################
+
+    date_lookup = finder_layer.date_lookup
+    dates = date_lookup.keys()
+    print len(dates)
+
+    cities = set()
+    for date in dates:
+        try:
+            for city in date_lookup[date][0]:
+                cities.add(city)
+        except IndexError:
+            # print date
+            # print date_lookup[date]
+            continue
+
+    city_date_pairs = product(cities, dates)
+
+    y_true = []
+    y_pred = []
+    for city, date in city_date_pairs:
+        try:
+            if city in date_lookup[date][1]:
+                y_true.append(1)
+            else:
+                y_true.append(0)
+            if city in date_lookup[date][2]:
+                y_pred.append(1)
+            else:
+                y_pred.append(0)
+        except:
+            # print date
+            # print date_lookup[date]
+            continue
+
+    conf_mat = confusion_matrix(y_true, y_pred)
+    # Transpoition of sklearn confusion matrix to this format:
+    # TP  FN
+    # FP  TN
+    conf_mat = [
+        [conf_mat[1][1], conf_mat[1][0]],
+        [conf_mat[0][1], conf_mat[0][0]]
+    ]
+
+    # True Positive Rate: TP / TP + FN
+    tpr = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[0][1])
+    # False Positive Rate: FP / FP + TN
+    fpr = float(conf_mat[1][0]) / (conf_mat[1][0] + conf_mat[1][1])
+    # Precision: TP / TP + FP
+    precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0])
+    # False Discovery Rate: FP / TP + FP
+    fdr = float(conf_mat[1][0]) / (conf_mat[0][0] + conf_mat[1][0])
     if (precision + tpr) == 0:
         f1 = 0
     else:
