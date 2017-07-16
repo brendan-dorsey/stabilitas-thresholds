@@ -37,10 +37,10 @@ def main():
 
 
 
-    # anomalies_df = filter_layer.get_anomaly_reports(
+    # anomales_df = filter_layer.get_anomaly_reports(
     #     write_to_file=False,
     #     filename=None
-    #     )
+    #     )i
 
     print len(anomalies_df["anomalous"])
 
