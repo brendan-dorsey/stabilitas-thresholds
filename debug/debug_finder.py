@@ -64,10 +64,10 @@ def main():
     with open("debug/debug_full_finder_city_lookup_{}.json".format(window), mode="w") as f:
         json.dump(city_lookup, f)
 
-    y_true = finder.flagged_df["critical"].values
-    y_pred = finder.flagged_df["predicted"].values
+    y_true = finder_layer.flagged_df["critical"].values
+    y_pred = finder_layer.flagged_df["predicted"].values
 
-    conf_mat = finder.confusion_matrix
+    conf_mat = finder_layer.confusion_matrix
     # Transpoition of sklearn confusion matrix to my preferred format:
     # TP  FN
     # FP  TN
@@ -123,7 +123,7 @@ def main():
     # false_positive_rates = []
     # true_positive_rates = []
     # for threshold in thresholds:
-    #     conf_mat = finder.predict(threshold=threshold)
+    #     conf_mat = finder_layer.predict(threshold=threshold)
     #     fpr = float(conf_mat[0][1]) / (conf_mat[0][1] + (conf_mat[0][0]) + 1)
     #     tpr = float(conf_mat[1][1]) / (conf_mat[1][1] + (conf_mat[1][0]) + 1)
     #
