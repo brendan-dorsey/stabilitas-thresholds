@@ -8,7 +8,7 @@ plt.style.use("ggplot")
 
 
 def main():
-    with open("app/date_lookup.json", "r") as f:
+    with open("debug/debug_full_finder_date_lookup_4wk.json", "r") as f:
         date_lookup = json.load(f)
 
     dates = date_lookup.keys()
