@@ -1,6 +1,6 @@
 from stabilitasfilter import StabilitasFilter
 from stabilitasfinder import StabilitasFinder
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import time
@@ -8,33 +8,33 @@ from datetime import datetime
 import json
 from sklearn.metrics import roc_auc_score, confusion_matrix, roc_curve, auc
 from itertools import combinations, product
-plt.style.use("ggplot")
+# plt.style.use("ggplot")
 
 
 def main():
     """
     Function to test implementation of Stabilitas Finder.
     """
-    # window = "1wk"
+    window = "1wk"
     # model_type = "rfc"
 
-    with open("debug/filter_full_date_lookup_1w.json") as f:
+    with open("debug/filter_full_date_lookup_{}.json".format(window)) as f:
         date_lookup = json.load(f)
 
-    with open("debug/filter_full_city_lookup_1w.json") as f:
+    with open("debug/filter_full_city_lookup_{}.json".format(window)) as f:
         city_lookup = json.load(f)
 
     finder_start = time.time()
     finder_layer = StabilitasFinder()
     finder_layer.load_data(
-        source="debug/flagged_reports_quad_1w_full.csv",
+        source="debug/flagged_reports_quad_{}_full.csv".format(window),
         date_lookup=date_lookup,
         city_lookup=city_lookup
     )
 
     finder_layer.label_critical_reports(cutoff=30)
 
-    finder_layer.cross_val_predict(model_type="gbc")
+    finder_layer.cross_val_predict()
     finder_layer._labeled_critical_cities_by_day()
     finder_layer._predicted_critical_cities_by_day()
     finder_layer._most_critical_report_per_city_per_day()
@@ -47,22 +47,22 @@ def main():
                                     finder_finish-finder_start
     )
 
-    # with open("debug/debug_full_final_date_lookup.json", mode="w") as f:
-    #     json.dump(finder_layer.date_lookup, f)
-    #
-    # city_lookup = finder_layer.city_lookup
-    #
-    # drop_keys = ["timeseries", "anomalies"]
-    # for key in drop_keys:
-    #     for sub_dict in city_lookup.values():
-    #         if isinstance(sub_dict, dict):
-    #             try:
-    #                 del sub_dict[key]
-    #             except KeyError:
-    #                 pass
-    #
-    # with open("debug/debug_full_final_city_lookup.json", mode="w") as f:
-    #     json.dump(city_lookup, f)
+    with open("debug/debug_full_finder_date_lookup_{}.json".format(window), mode="w") as f:
+        json.dump(finder_layer.date_lookup, f)
+
+    city_lookup = finder_layer.city_lookup
+
+    drop_keys = ["timeseries", "anomalies"]
+    for key in drop_keys:
+        for sub_dict in city_lookup.values():
+            if isinstance(sub_dict, dict):
+                try:
+                    del sub_dict[key]
+                except KeyError:
+                    pass
+
+    with open("debug/debug_full_finder_city_lookup_{}.json".format(window), mode="w") as f:
+        json.dump(city_lookup, f)
 
     y_true = finder.flagged_df["critical"].values
     y_pred = finder.flagged_df["predicted"].values
@@ -100,6 +100,11 @@ def main():
     print "False Positive Rate: ", fpr
     print "False Discovery Rate: ", fdr
     print "F1 Score: ", f1
+
+
+
+
+
 
     ########################################
     ########################################
