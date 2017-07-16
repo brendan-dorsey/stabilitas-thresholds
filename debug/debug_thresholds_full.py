@@ -15,7 +15,8 @@ def main():
     """
     Main function to run both layers of Stabilitas Thresholds app.
     """
-    window_size = "1w"
+    window_size = "4w"
+    cutoff = 50
     filter_start = time.time()
     print "Started at {}.".format(datetime.now().time())
     # Filepaths assume running this script from stabilitas-thresholds/ dir
@@ -73,7 +74,7 @@ def main():
         city_lookup=city_lookup
     )
 
-    finder_layer.label_critical_reports()
+    finder_layer.label_critical_reports(cutoff=cutoff)
 
     finder_layer.cross_val_predict()
     finder_layer._labeled_critical_cities_by_day()

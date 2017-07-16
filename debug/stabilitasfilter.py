@@ -145,6 +145,7 @@ class StabilitasFilter(object):
         Output: fit model ready to return anomaly information
         """
         self.resample_size = resample_size
+        self.time_delta = pd.Timedelta(minutes=self.resample_size)
         self.window = \
             self.window_to_minutes_converter[window_size] / resample_size
         self.threshold = anomaly_threshold
@@ -376,7 +377,18 @@ class StabilitasFilter(object):
         """
         print "Detecting anomalies..."
         start = time.time()
-        for city in self.reports_df["city"].unique():
+        idx = pd.IndexSlice
+        total_cities = len(self.reports_df["city"].unique())
+        self.reports_df["anomalous"] = np.zeros(len(self.reports_df))
+
+        for i, city in enumerate(self.reports_df["city"].unique()):
+            if i % 10 == 0:
+                current_time = time.time() - start
+                total_time = (current_time * total_cities) / (i+1)
+                print "     Estimated {0} seconds remaining for {1} cities".format(
+                    int(round(total_time - current_time)),
+                    total_cities - i
+                )
             series = self.city_lookup[city]["timeseries"]
 
             rolling_std = series.rolling(
@@ -391,16 +403,26 @@ class StabilitasFilter(object):
             ).mean()
 
             threshold = rolling_mean + self.threshold * rolling_std
+            locations = range(len(threshold))
 
             anomalies = []
-            for sample, threshold in izip(series, threshold):
+            self.city_lookup[city]["anomaly_indices"] = []
+            for sample, threshold, location in izip(series, threshold, locations):
                 if sample > threshold:
                     anomalies.append(sample)
+                    window_start = (series.index[location] - self.time_delta)
+                    window_stop = series.index[location]
+                    self.reports_df.loc[
+                        idx[window_start:window_stop, city, :],
+                        idx["anomalous"]
+                    ] = 1
                 else:
                     anomalies.append(None)
 
             anomalies = pd.Series(anomalies, index=series.index)
             self.city_lookup[city]["anomalies"] = anomalies.dropna()
+
+        print sum(self.reports_df["anomalous"])
         finish = time.time()
         print "Anomalies detected in {0} seconds.".format(finish-start)
 
@@ -466,30 +488,32 @@ class StabilitasFilter(object):
         idx = pd.IndexSlice
         total_cities = len(self.city_lookup.keys())
 
-        # for i, city in enumerate(self.city_lookup.keys()):
-        #     if i % 10 == 0:
-        #         current_time = time.time() - start
-        #         total_time = (current_time * total_cities) / (i+1)
-        #         print "     Estimated {0} seconds remaining for {1} cities".format(
-        #             int(round(total_time - current_time)),
-        #             total_cities - i
-        #         )
-        #
-        #     anomalies = self.city_lookup[city]["anomalies"]
-        #     for timestamp in anomalies.index:
-        #         window_start = timestamp - time_delta
-        #         self.reports_df.loc[
-        #             idx[window_start:timestamp, city, :],
-        #             idx["anomalous"]
-        #         ] = 1
+        for i, city in enumerate(self.city_lookup.keys()):
+            if i % 10 == 0:
+                current_time = time.time() - start
+                total_time = (current_time * total_cities) / (i+1)
+                print "     Estimated {0} seconds remaining for {1} cities".format(
+                    int(round(total_time - current_time)),
+                    total_cities - i
+                )
+            try:
+                anomalies = self.city_lookup[city]["anomaly_indices"]
+                for window_start, timestamp in anomalies:
+                    # window_start = timestamp - time_delta
+                    self.reports_df.loc[
+                        idx[window_start:timestamp, city, :],
+                        idx["anomalous"]
+                    ] = 1
+            except KeyError:
+                pass
 
         # Multiprocessing attempt
-        self.reports_df = pooled_labeling(
-            idx,
-            time_delta,
-            self.city_lookup,
-            self.reports_df,
-        )
+        # self.reports_df = pooled_labeling(
+        #     idx,
+        #     time_delta,
+        #     self.city_lookup,
+        #     self.reports_df,
+        # )
 
 
 
