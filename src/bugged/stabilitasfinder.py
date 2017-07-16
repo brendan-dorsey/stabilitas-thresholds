@@ -69,7 +69,7 @@ class StabilitasFinder(object):
                 pass
         else:
             df = source
-            df.loc[:,"start_ts"] = pd.to_datetime(df["start_ts"])
+            df["start_ts"] = pd.to_datetime(df["start_ts"])
             self.flagged_df = df.sort_values("start_ts")
 
         self.flagged_df.reset_index(drop=True, inplace=True)
@@ -84,15 +84,8 @@ class StabilitasFinder(object):
         next_day = pd.Timedelta(days=1)
         # titles = []
 
-        total_cities = len(self.flagged_df["city"].unique())
+        num_cities = len(self.flagged_df["city"].unique())
         for i, city in enumerate(self.flagged_df["city"].unique()):
-            if i % 10 == 0:
-                current_time = time.time() - start
-                total_time = (current_time * total_cities) / (i+1)
-                print "     Estimated {0} seconds remaining for {1} cities".format(
-                    int(round(total_time - current_time)),
-                    total_cities - i
-                )
 
             city_df = self.flagged_df[self.flagged_df["city"] == city]
             city_df = city_df.set_index("start_ts")
@@ -107,6 +100,8 @@ class StabilitasFinder(object):
                 future_reports = city_df[report_time:stop_time]
                 if len(future_reports) >= cutoff:
                     self.flagged_df.loc[index, "critical"] = 1
+        if i % 10 == 0:
+            print "  Reports labeled for {0} of {1} cities...".format(i, num_cities)
 
         # critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
         # critical_df["title"].to_csv("data/critical_titles.txt", sep=" ", mode="w")
@@ -219,8 +214,8 @@ class StabilitasFinder(object):
         models = {
             "nb": MultinomialNB(),
             "gbc": GradientBoostingClassifier(
-                learning_rate=0.1,
-                n_estimators=100,
+                learning_rate=0.005,
+                n_estimators=2000,
                 max_depth=13,
                 min_samples_split=3,
                 min_samples_leaf=1,
@@ -244,7 +239,7 @@ class StabilitasFinder(object):
             if model_type == "gbc":
                 thresholds = [0.2164]
             elif model_type == "rfc":
-                thresholds = [0.2585]
+                thresholds = [0.2044]
 
         for train_index, test_index in kf.split(X):
             X_train, X_test = X[train_index], X[test_index]
@@ -262,10 +257,6 @@ class StabilitasFinder(object):
         if len(cv_predicted) == 1:
             self.flagged_df["predicted"] = cv_predicted[0]
             self.flagged_df["predicted_probas"] = cv_probas
-            self.confusion_matrix = confusion_matrix(
-                self.flagged_df["critical"].values,
-                self.flagged_df["predicted"].values
-            )
 
         print "     Predictions made in {} seconds.".format(time.time()-start)
         return cv_predicted
@@ -333,7 +324,7 @@ class StabilitasFinder(object):
             print "Extracting most critical reports..."
             for city in self.flagged_df["city"].unique():
                 city_df = self.flagged_df[self.flagged_df["city"] == city]
-                city_df.loc[:,"date"] = city_df["start_ts"].apply(lambda x: x.date())
+                city_df["date"] = city_df["start_ts"].apply(lambda x: x.date())
                 days = set(city_df["date"])
 
                 for day in days:
