@@ -551,11 +551,11 @@ def pooled_labeling(
 ):
     start = time.time()
     print "Splitting dataframe for labelling..."
-    df_split = np.array_split(dataframe, cpu_count())
+    df_split = np.array_split(dataframe, cpu_count()/2)
     print "     Done splitting in {} seconds.".format(time.time()-start)
 
 
-    pool = Pool(cpu_count())
+    pool = Pool(cpu_count()/2)
     function = partial(
         label_anomalous_reports,
         idx,
