@@ -15,7 +15,7 @@ def main():
     """
     Function to test implementation of Stabilitas Finder.
     """
-    window = "1wk"
+    window = "4wk"
     # model_type = "rfc"
 
     with open("debug/filter_full_date_lookup_{}.json".format(window)) as f:
@@ -32,7 +32,7 @@ def main():
         city_lookup=city_lookup
     )
 
-    finder_layer.label_critical_reports(cutoff=30)
+    finder_layer.label_critical_reports(cutoff=50)
 
     finder_layer.cross_val_predict()
     finder_layer._labeled_critical_cities_by_day()
