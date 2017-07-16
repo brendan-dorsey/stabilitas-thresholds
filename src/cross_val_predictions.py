@@ -11,10 +11,10 @@ plt.style.use("ggplot")
 
 def main():
 
-    with open("debug/DEC_subset/debug_final_date_lookup.json", "r") as f:
+    with open("data/outputs_2016/1wk_window/filter_date_lookup_1wk.json", "r") as f:
         date_lookup = json.load(f)
 
-    with open("debug/DEC_subset/debug_final_city_lookup.json", "r") as f:
+    with open("data/outputs_2016/1wk_window/filter_city_lookup_1wk.json", "r") as f:
         city_lookup = json.load(f)
 
     ########################################
@@ -33,7 +33,7 @@ def main():
     for cutoff in cutoffs:
         finder = StabilitasFinder()
         finder.load_data(
-            source="debug/DEC_subset/flagged_reports_quad_1wk.csv",
+            source="data/outputs_2016/1wk_window/filter_flagged_reports_1wk.csv",
             date_lookup=date_lookup,
             city_lookup=city_lookup
         )
@@ -50,7 +50,7 @@ def main():
 
         # models = ["nb", "gbc", "rfc"]
         # models = ["gbc", "rfc", "svm"]
-        models = ["gbc", "rfc"]
+        models = ["gbc", "rfc", "svm", "logreg", "nb"]
         for model in models:
             false_positive_rates = []
             true_positive_rates = []
@@ -134,7 +134,7 @@ def main():
     ax.set_ylabel("True Positive Rate")
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    ax.set_title("ROC Curve with Severity Scoring and 1 SD Threshold")
+    ax.set_title("ROC Curves")
     plt.legend(loc="lower right")
     plt.show()
 

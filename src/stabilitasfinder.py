@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split, cross_val_predict, KFold
 from sklearn.metrics import confusion_matrix
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 import time
 
 
@@ -228,7 +229,7 @@ class StabilitasFinder(object):
                 subsample=0.3
             ),
             "rfc": RandomForestClassifier(
-                n_estimators=3200,
+                n_estimators=100,
                 n_jobs=-1,
                 max_depth=None,
                 min_samples_split=10,
@@ -236,9 +237,14 @@ class StabilitasFinder(object):
                 max_features=100
             ),
             "svm": SVC(
-                kernel="linear",
+                kernel="rbf",
+                C=10.,
                 probability=True,
             ),
+            "logreg": LogisticRegression(
+                solver="sag",
+                n_jobs=-1
+            )
         }
         if thresholds == None:
             if model_type == "gbc":
