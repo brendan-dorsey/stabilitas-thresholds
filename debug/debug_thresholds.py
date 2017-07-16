@@ -21,7 +21,7 @@ def main():
     cities_filename = "debug/cities300000.csv"
     filter_layer = StabilitasFilter(cities_filename, cleaned=True)
 
-    data_filename = "debug/reports_12DEC16-26DEC16.tsv"
+    data_filename = "debug/DEC_subset/reports_12DEC16-26DEC16.tsv"
     filter_layer.fit(
         data_filename,
         start_datetime="2016-12-12",
@@ -30,14 +30,14 @@ def main():
         window_size="1w",
         anomaly_threshold=1,
         load_city_labels=True,
-        city_labels_path="debug/city_labels.csv",
+        city_labels_path="debug/DEC_subset/DEC_city_labels.csv",
         quadratic=True,
         save_labels=False,
     )
 
     anomalies_df = filter_layer.get_anomaly_reports(
         write_to_file=True,
-        filename="debug/flagged_reports_quad_1wk.csv"
+        filename="debug/DEC_subset/flagged_reports_quad_1wk.csv"
         )
     date_lookup = filter_layer.date_lookup
     city_lookup = filter_layer.city_lookup
@@ -51,10 +51,10 @@ def main():
                 except KeyError:
                     pass
 
-    with open("debug/filter_date_lookup.json", mode="w") as f:
+    with open("debug/DEC_subset/filter_date_lookup.json", mode="w") as f:
         json.dump(date_lookup, f)
 
-    with open("debug/filter_city_lookup.json", mode="w") as f:
+    with open("debug/DEC_subset/filter_city_lookup.json", mode="w") as f:
         json.dump(city_lookup, f)
 
     filter_finish = time.time()
@@ -91,7 +91,7 @@ def main():
                                     finder_finish-filter_start
     )
 
-    with open("debug/debug_final_date_lookup.json", mode="w") as f:
+    with open("debug/DEC_subset/debug_final_date_lookup.json", mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
     city_lookup = finder_layer.city_lookup
@@ -105,7 +105,7 @@ def main():
                 except KeyError:
                     pass
 
-    with open("debug/debug_final_city_lookup.json", mode="w") as f:
+    with open("debug/DEC_subset/debug_final_city_lookup.json", mode="w") as f:
         json.dump(city_lookup, f)
 
     y_true = finder_layer.flagged_df["critical"].values
@@ -128,6 +128,80 @@ def main():
     precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0] + 1)
     # False Discovery Rate: FP / TP + FP
     fdr = float(conf_mat[1][0]) / (conf_mat[0][0] + conf_mat[1][0] + 1)
+    if (precision + tpr) == 0:
+        f1 = 0
+    else:
+        f1 = 2 * (precision * tpr) / (precision + tpr)
+
+    print "Confusion Matrix:"
+    for row in conf_mat:
+        print "     ", row
+
+    print ""
+    print "AUC: ", roc_auc_score(y_true, y_pred)
+    print "Precision: ", precision
+    print "True Positive Rate (Recall): ", tpr
+    print "False Positive Rate: ", fpr
+    print "False Discovery Rate: ", fdr
+    print "F1 Score: ", f1
+
+    ########################################
+    ########################################
+    ##                                    ##
+    ##  Code for by city by day metrics   ##
+    ##                                    ##
+    ########################################
+    ########################################
+
+    date_lookup = finder_layer.date_lookup
+    dates = date_lookup.keys()
+
+    cities = set()
+    for date in dates:
+        try:
+            for city in date_lookup[date][0]:
+                cities.add(city)
+        except IndexError:
+            # print date
+            # print date_lookup[date]
+            continue
+
+    city_date_pairs = product(cities, dates)
+
+    y_true = []
+    y_pred = []
+    for city, date in city_date_pairs:
+        try:
+            if city in date_lookup[date][1]:
+                y_true.append(1)
+            else:
+                y_true.append(0)
+            if city in date_lookup[date][2]:
+                y_pred.append(1)
+            else:
+                y_pred.append(0)
+        except:
+            # print date
+            # print date_lookup[date]
+            continue
+
+    conf_mat = confusion_matrix(y_true, y_pred)
+    # Transpoition of sklearn confusion matrix to this format:
+    # TP  FN
+    # FP  TN
+    conf_mat = [
+        [conf_mat[1][1], conf_mat[1][0]],
+        [conf_mat[0][1], conf_mat[0][0]]
+    ]
+
+    # True Positive Rate: TP / TP + FN
+    tpr = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[0][1])
+    # False Positive Rate: FP / FP + TN
+    fpr = float(conf_mat[1][0]) / (conf_mat[1][0] + conf_mat[1][1])
+    # Precision: TP / TP + FP
+    precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0])
+    # False Discovery Rate: FP / TP + FP
+    fdr = float(conf_mat[1][0]) / (conf_mat[0][0] + conf_mat[1][0])
     if (precision + tpr) == 0:
         f1 = 0
     else:

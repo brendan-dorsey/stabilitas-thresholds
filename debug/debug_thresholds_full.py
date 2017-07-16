@@ -33,7 +33,7 @@ def main():
         load_city_labels=True,
         city_labels_path="data/2016_city_labels.csv",
         quadratic=True,
-        save_labels=True,
+        save_labels=False,
     )
 
 
@@ -146,6 +146,7 @@ def main():
     print "False Positive Rate: ", fpr
     print "False Discovery Rate: ", fdr
     print "F1 Score: ", f1
+    print ""
 
     ########################################
     ########################################
@@ -157,7 +158,6 @@ def main():
 
     date_lookup = finder_layer.date_lookup
     dates = date_lookup.keys()
-    print len(dates)
 
     cities = set()
     for date in dates:

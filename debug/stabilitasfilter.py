@@ -526,22 +526,21 @@ def label_anomalous_reports(
     dictionary,
     dataframe,
 ):
+    print "Worker starting..."
     start = time.time()
-    city = dataframe["city"].unique()[0]
-    # trigger = random.random()
-    # if trigger < 0.:
-    #     print "Labelling {}".format(city)
-    try:
-        anomalies = dictionary[city]["anomalies"]
-        for timestamp in anomalies.index:
-            window_start = timestamp - time_delta
-            dataframe.loc[
-                idx[window_start:timestamp, city, :],
-                idx["anomalous"]
-            ] = 1
-    except KeyError:
-        pass
-    print "     Done with {0} in {1} seconds.".format(city, time.time()-start)
+    cities = dataframe["city"].unique()
+    for city in cities:
+        try:
+            anomalies = dictionary[city]["anomalies"]
+            for timestamp in anomalies.index:
+                window_start = timestamp - time_delta
+                dataframe.loc[
+                    idx[window_start:timestamp, city, :],
+                    idx["anomalous"]
+                ] = 1
+        except KeyError:
+            pass
+    print "Worker finished in {} seconds.".format(time.time() - start)
     return dataframe
 
 def pooled_labeling(
@@ -552,12 +551,10 @@ def pooled_labeling(
 ):
     start = time.time()
     print "Splitting dataframe for labelling..."
-    df_split = [ dataframe[dataframe["city"] == city ]
-        for city in dataframe["city"].unique()
-    ]
+    df_split = np.array_split(dataframe, cpu_count())
     print "     Done splitting in {} seconds.".format(time.time()-start)
 
-    
+
     pool = Pool(cpu_count())
     function = partial(
         label_anomalous_reports,
@@ -565,6 +562,7 @@ def pooled_labeling(
         time_delta,
         dictionary,
     )
+    print "     Mapping pool..."
     dataframe = pd.concat(pool.map(function, df_split))
     pool.close()
     pool.join()

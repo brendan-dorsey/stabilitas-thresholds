@@ -69,7 +69,7 @@ class StabilitasFinder(object):
                 pass
         else:
             df = source
-            df["start_ts"] = pd.to_datetime(df["start_ts"])
+            df.loc[:,"start_ts"] = pd.to_datetime(df["start_ts"])
             self.flagged_df = df.sort_values("start_ts")
 
         self.flagged_df.reset_index(drop=True, inplace=True)
@@ -223,10 +223,10 @@ class StabilitasFinder(object):
                 subsample=0.3
             ),
             "rfc": RandomForestClassifier(
-                n_estimators=1000,
+                n_estimators=3200,
                 n_jobs=-1,
                 max_depth=None,
-                min_samples_split=3,
+                min_samples_split=10,
                 min_samples_leaf=1,
                 max_features=100
             ),
@@ -239,16 +239,9 @@ class StabilitasFinder(object):
             if model_type == "gbc":
                 thresholds = [0.2164]
             elif model_type == "rfc":
-                thresholds = [0.2044]
+                thresholds = [0.2585]
 
-        for i, train_index, test_index in enumerate(kf.split(X)):
-            if i > 0:
-                    current_time = time.time() - start
-                    total_time = (current_time * 5) / (i+1)
-                    print "     Estimated {0} seconds remaining for {1} more folds.".format(
-                        int(round(total_time - current_time)),
-                        5 - i
-                    )
+        for train_index, test_index in kf.split(X):
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
             X_train = vectorizer.fit_transform(X_train)
@@ -335,7 +328,7 @@ class StabilitasFinder(object):
             print "Extracting most critical reports..."
             for city in self.flagged_df["city"].unique():
                 city_df = self.flagged_df[self.flagged_df["city"] == city]
-                city_df["date"] = city_df["start_ts"].apply(lambda x: x.date())
+                city_df.loc[:,"date"] = city_df["start_ts"].apply(lambda x: x.date())
                 days = set(city_df["date"])
 
                 for day in days:

@@ -33,7 +33,7 @@ def main():
     for cutoff in cutoffs:
         finder = StabilitasFinder()
         finder.load_data(
-            source="debug/DEC_subset/flagged_reports_quad_1wk.csvv",
+            source="debug/DEC_subset/flagged_reports_quad_1wk.csv",
             date_lookup=date_lookup,
             city_lookup=city_lookup
         )
@@ -68,10 +68,20 @@ def main():
                 # FP  TN
                 conf_mat = [[conf_mat[1][1], conf_mat[1][0]], [conf_mat[0][1], conf_mat[0][0]]]
                 # True Positive Rate: TP / TP + FN
-                tpr = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[0][1] + 1)
+                try:
+                    tpr = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[0][1])
+                except:
+                    tpr = 0
                 # False Positive Rate: FP / FP + TN
-                fpr = float(conf_mat[1][0]) / (conf_mat[1][0] + conf_mat[1][1] + 1)
-                precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0] + 1)
+                try:
+                    fpr = float(conf_mat[1][0]) / (conf_mat[1][0] + conf_mat[1][1])
+                except:
+                    fpr = 0
+                # Precision: TP / TP + FP
+                try:
+                    precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0])
+                except:
+                    precision = 0
                 if (precision + tpr) == 0:
                     f1 = 0
                 else:
