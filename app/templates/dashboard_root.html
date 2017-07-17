@@ -27,16 +27,6 @@
        }
     </style>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul class=flashes>
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-
   </head>
 
   <body>
@@ -116,9 +106,9 @@
                     radius: 70000 * scaling_factor,
                     strokeColor: "#FF0000",
                     strokeOpacity: 1,
-                    strokeWeight: 2,
+                    strokeWeight: 0 + (scaling_factor - 1) * 10,
                     fillColor: "#FF0000",
-                    fillOpacity: 0,
+                    fillOpacity: 0 ,
                     clickable: true,
                     map: map
                   });
