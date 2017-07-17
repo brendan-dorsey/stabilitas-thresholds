@@ -412,10 +412,11 @@ class StabilitasFilter(object):
                     anomalies.append(sample)
                     window_start = (series.index[location] - self.time_delta)
                     window_stop = series.index[location]
-                    self.reports_df.loc[
-                        idx[window_start:window_stop, city, :],
-                        idx["anomalous"]
-                    ] = 1
+                    self.city_lookup[city]["anomaly_indices"].append((window_start, window_stop))
+                    # self.reports_df.loc[
+                    #     idx[window_start:window_stop, city, :],
+                    #     idx["anomalous"]
+                    # ] = 1
                 else:
                     anomalies.append(None)
 
@@ -507,12 +508,14 @@ class StabilitasFilter(object):
             except KeyError:
                 pass
 
-        # Multiprocessing attempt
+        #### Multiprocessing attempt ####
+        # cities = self.reports_df["city"].unique()
         # self.reports_df = pooled_labeling(
         #     idx,
         #     time_delta,
         #     self.city_lookup,
         #     self.reports_df,
+        #     cities
         # )
 
 
@@ -549,45 +552,42 @@ def label_anomalous_reports(
     time_delta,
     dictionary,
     dataframe,
+    city
 ):
-    print "Worker starting..."
+    print "Worker checking:      {}".format(city)
     start = time.time()
-    cities = dataframe["city"].unique()
-    for city in cities:
-        try:
-            anomalies = dictionary[city]["anomalies"]
-            for timestamp in anomalies.index:
-                window_start = timestamp - time_delta
-                dataframe.loc[
-                    idx[window_start:timestamp, city, :],
-                    idx["anomalous"]
-                ] = 1
-        except KeyError:
-            pass
+    try:
+        anomalies = dictionary[city]["anomalies"]
+        for timestamp in anomalies.index:
+            window_start = timestamp - time_delta
+            dataframe.loc[
+                idx[window_start:timestamp, city, :],
+                idx["anomalous"]
+            ] = 1
+    except KeyError:
+        pass
     print "Worker finished in {} seconds.".format(time.time() - start)
-    return dataframe
+    return dataframe.loc[idx[:, city, :], idx[:]]
 
 def pooled_labeling(
     idx,
     time_delta,
     dictionary,
     dataframe,
+    cities,
 ):
     start = time.time()
-    print "Splitting dataframe for labelling..."
-    df_split = np.array_split(dataframe, cpu_count()/2)
-    print "     Done splitting in {} seconds.".format(time.time()-start)
 
-
-    pool = Pool(cpu_count()/2)
+    pool = Pool(cpu_count())
     function = partial(
         label_anomalous_reports,
         idx,
         time_delta,
         dictionary,
+        dataframe,
     )
     print "     Mapping pool..."
-    dataframe = pd.concat(pool.map(function, df_split))
+    dataframe = pd.concat(pool.map(function, cities))
     pool.close()
     pool.join()
     return dataframe

@@ -16,10 +16,10 @@ def main():
     filter_start = time.time()
     print "Started at {}.".format(datetime.now().time())
     # Filepaths assume running this script from stabilitas-thresholds/ dir
-    cities_filename = "debug/cities300000.csv"
+    cities_filename = "data/cities300000.csv"
     filter_layer = StabilitasFilter(cities_filename, cleaned=True)
 
-    data_filename = "debug/DEC_subset/reports_12DEC16-26DEC16.tsv"
+    data_filename = "data/DEC_2016_subsample/reports_12DEC16-26DEC16.tsv"
     filter_layer.fit(
         data_filename,
         start_datetime="2016-12-12",
@@ -28,7 +28,7 @@ def main():
         window_size="1w",
         anomaly_threshold=1,
         load_city_labels=True,
-        city_labels_path="debug/DEC_subset/DEC_city_labels.csv",
+        city_labels_path="data/DEC_2016_subsample/DEC_city_labels.csv",
         quadratic=True,
         save_labels=False,
     )
@@ -37,12 +37,13 @@ def main():
 
 
 
-    # anomales_df = filter_layer.get_anomaly_reports(
-    #     write_to_file=False,
-    #     filename=None
-    #     )i
+    anomalies_df = filter_layer.get_anomaly_reports(
+        write_to_file=False,
+        filename=None
+        )
 
-    print len(anomalies_df["anomalous"])
+    print anomalies_df.info()
+    # print len(anomalies_df["anomalous"])
 
     exit()
 
