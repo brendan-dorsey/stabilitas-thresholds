@@ -11,10 +11,13 @@ def map():
     except:
         key = "2016-12-20"
 
+    invalid_key = ""
+
     try:
         date_lookup[key]
         invalid_query = False
     except KeyError:
+        invalid_key = key
         key = "2016-12-20"
         invalid_query = True
 
@@ -116,6 +119,7 @@ def map():
     return render_template(
         "dashboard_root.html",
         invalid_query=invalid_query,
+        invalid_key=invalid_key,
         query_date=key,
         predicted_cities=predicted_combos,
         critical_cities=critical_combos,

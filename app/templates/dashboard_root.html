@@ -108,15 +108,16 @@
 
                 // Plot circles for predicted cities
                 for (var i=0; i < {{num_pred}}; i++) {
-                  var city_info = predicted_cities[i][0] + " " + predicted_cities[i][1] + " " + predicted_cities[i][2]
+                  var scaling_factor = 1 + (predicted_cities[i][1] - 0.2);
+                  var city_info = predicted_cities[i][0] + " " + predicted_cities[i][1] + " " + predicted_cities[i][2];
                   var city = new google.maps.LatLng(predicted_cities[i][3][0], predicted_cities[i][3][1]);
                   var circlePred = new google.maps.Circle({
                     center: city,
-                    radius: 70000,
+                    radius: 70000 * scaling_factor,
                     strokeColor: "#FF0000",
                     strokeOpacity: 1,
                     strokeWeight: 2,
-                    fillColor: "#FFFFFF",
+                    fillColor: "#FF0000",
                     fillOpacity: 0,
                     clickable: true,
                     map: map
@@ -126,16 +127,17 @@
 
                 // Plot circles for critical cities
                 for (var i=0; i < {{num_crit}}; i++) {
+                  var scaling_factor = 1 + (critical_cities[i][1] - 0.2);
                   var city_info = critical_cities[i][0] + " " + critical_cities[i][1] + " " + critical_cities[i][2]
                   var city = new google.maps.LatLng(critical_cities[i][3][0], critical_cities[i][3][1]);
                   var circleCrit = new google.maps.Circle({
                     center: city,
-                    radius: 50000,
+                    radius: 50000 * scaling_factor,
                     strokeColor: "#000000",
                     strokeOpacity: 1,
                     strokeWeight: 1,
                     fillColor: "#FFA500",
-                    fillOpacity: .6,
+                    fillOpacity: 0.6 * scaling_factor,
                     clickable: true,
                     map: map
                   });
@@ -144,16 +146,17 @@
 
                 // Plot circles for elevated cities
                 for (var i=0; i < {{num_elev}}; i++) {
+                  var scaling_factor = 1 + (elevated_cities[i][1] - 0.2);
                   var city_info = elevated_cities[i][0] + " " + elevated_cities[i][1] + " " + elevated_cities[i][2]
                   var city = new google.maps.LatLng(elevated_cities[i][3][0], elevated_cities[i][3][1]);
                   var circleElev = new google.maps.Circle({
                     center: city,
-                    radius: 45000,
+                    radius: 45000 * scaling_factor,
                     strokeColor: "#000000",
                     strokeOpacity: 0,
                     strokeWeight: 0,
                     fillColor: "#0000FF",
-                    fillOpacity: .5,
+                    fillOpacity: 0.5 * scaling_factor,
                     clickable: true,
                     map: map
                   });
@@ -258,11 +261,9 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script>
-    function checkQuery() {
-      // var invalidQuery = {{invalid_query}}
-      // if (invalidQuery = True) {
-      alert("There is no data for your entry.");
-      // }
+    var invalidQuery = {{invalid_query|tojson}}
+    if (invalidQuery) {
+      alert("There is no data for your entry: {{invalid_key}}.");
     }
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>

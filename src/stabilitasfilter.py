@@ -423,7 +423,7 @@ class StabilitasFilter(object):
             anomalies = pd.Series(anomalies, index=series.index)
             self.city_lookup[city]["anomalies"] = anomalies.dropna()
 
-        print sum(self.reports_df["anomalous"])
+        # print sum(self.reports_df["anomalous"])
         finish = time.time()
         print "Anomalies detected in {0} seconds.".format(finish-start)
 
@@ -578,7 +578,7 @@ def pooled_labeling(
 ):
     start = time.time()
 
-    pool = Pool(cpu_count()/2)
+    pool = Pool((cpu_count() / 2) - 1)
     function = partial(
         label_anomalous_reports,
         idx,
