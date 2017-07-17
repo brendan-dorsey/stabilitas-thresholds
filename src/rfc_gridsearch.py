@@ -347,12 +347,12 @@ def main():
         json.dump(grid8.best_score_, f)
 
     # Grid 8 Results:
-    # Best AUC:
+    # Best AUC:  0.562499473128
     # Best params:  {
     #     'vectorizer__analyzer': 'word',
     #     'vectorizer__stop_words': 'english',
     #     'vectorizer__max_features': 2500,
-    #     'classifier__n_estimators': 100,
+    #     'classifier__n_estimators': 192,
     #     'classifier__max_depth': None
     #     'classifier__min_samples_split': 10,
     #     'classifier__min_samples_leaf': 1,
