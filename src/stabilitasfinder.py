@@ -229,7 +229,7 @@ class StabilitasFinder(object):
                 subsample=0.3
             ),
             "rfc": RandomForestClassifier(
-                n_estimators=1000,
+                n_estimators=100,
                 n_jobs=-1,
                 max_depth=None,
                 min_samples_split=10,
