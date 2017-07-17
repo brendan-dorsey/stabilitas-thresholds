@@ -29,7 +29,7 @@ def main():
 
     fig, ax = plt.subplots(1, figsize=(8,8))
     # Use cutoff = 10 for 2std, cutoff = 30 for 1 std
-    cutoffs = [30]
+    cutoffs = [20, 30, 40]
     for cutoff in cutoffs:
         finder = StabilitasFinder()
         finder.load_data(
@@ -50,7 +50,8 @@ def main():
 
         # models = ["nb", "gbc", "rfc"]
         # models = ["gbc", "rfc", "svm"]
-        models = ["gbc", "rfc", "svm", "logreg", "nb"]
+        # models = ["gbc", "rfc", "logreg", "nb"]
+        models = ["rfc"]
         for model in models:
             false_positive_rates = []
             true_positive_rates = []

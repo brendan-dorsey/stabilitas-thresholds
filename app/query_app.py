@@ -13,22 +13,10 @@ def map():
 
     try:
         date_lookup[key]
+        invalid_query = False
     except KeyError:
-        # flash("Invalid query")
-        return render_template(
-            "dashboard_root.html",
-            query_date=key,
-            predicted_cities=[],
-            critical_cities=[],
-            elevated_cities=[],
-            predicted_locs=[],
-            critical_locs=[],
-            elevated_locs=[],
-            num_pred=0,
-            num_crit=0,
-            num_elev=0,
-            root_link=url_for("map")
-        ), 200
+        key = "2016-12-20"
+        invalid_query = True
 
     try:
         predicted_cities = set(date_lookup[key][2])
@@ -127,6 +115,7 @@ def map():
 
     return render_template(
         "dashboard_root.html",
+        invalid_query=invalid_query,
         query_date=key,
         predicted_cities=predicted_combos,
         critical_cities=critical_combos,

@@ -250,7 +250,7 @@ class StabilitasFinder(object):
             if model_type == "gbc":
                 thresholds = [0.2164]
             elif model_type == "rfc":
-                thresholds = [0.2585]
+                thresholds = [0.2044]
 
         for train_index, test_index in kf.split(X):
             X_train, X_test = X[train_index], X[test_index]
