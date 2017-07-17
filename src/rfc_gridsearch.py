@@ -319,7 +319,7 @@ def main():
         "vectorizer__analyzer": ["word"],
         "vectorizer__stop_words": ["english"],
         "vectorizer__max_features": [2500],
-        "classifier__n_estimators": [640],
+        "classifier__n_estimators": [192],
         "classifier__max_depth": [None],
         "classifier__min_samples_split": [2, 4, 6, 8, 10],
         "classifier__min_samples_leaf": [1, 2, 3],
