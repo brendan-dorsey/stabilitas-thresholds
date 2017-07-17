@@ -1,8 +1,15 @@
-Current Model:
+Parameters:
     Scoring: Volume
     Window: 1 week
     Cutoff: 30
-    Model: RFC
+    Model: RFC(
+              n_estimators=100,
+              n_jobs=-1,
+              max_depth=None,
+              min_samples_split=10,
+              min_samples_leaf=1,
+              max_features=100
+          )
     Probability Threshold: 0.2044
 
     Results:
@@ -22,7 +29,7 @@ Current Model:
 
 
       By City by Date:
-      
+
         Confusion Matrix:
             [847, 115]
             [10714, 258014]
