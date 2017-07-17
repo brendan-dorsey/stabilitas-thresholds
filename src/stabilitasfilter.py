@@ -508,7 +508,7 @@ class StabilitasFilter(object):
             except KeyError:
                 pass
 
-        #### Multiprocessing attempt ####
+        ### Multiprocessing attempt ####
         # cities = self.reports_df["city"].unique()
         # self.reports_df = pooled_labeling(
         #     idx,
@@ -578,7 +578,7 @@ def pooled_labeling(
 ):
     start = time.time()
 
-    pool = Pool(cpu_count())
+    pool = Pool(cpu_count()/2)
     function = partial(
         label_anomalous_reports,
         idx,

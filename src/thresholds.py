@@ -15,12 +15,12 @@ def main():
     """
     Main function to run both layers of Stabilitas Thresholds app.
     """
-    window_size = "4w"
-    cutoff = 50
+    window_size = "1w"
+    cutoff = 30
     filter_start = time.time()
     print "Started at {}.".format(datetime.now().time())
     # Filepaths assume running this script from stabilitas-thresholds/ dir
-    cities_filename = "debug/cities300000.csv"
+    cities_filename = "data/cities300000.csv"
     filter_layer = StabilitasFilter(cities_filename, cleaned=True)
 
     data_filename = "data/2016/all_2016.txt"
@@ -32,20 +32,20 @@ def main():
         window_size=window_size,
         anomaly_threshold=1,
         load_city_labels=True,
-        city_labels_path="data/2016_city_labels.csv",
-        quadratic=True,
+        city_labels_path="data/outputs_2016/2016_city_labels.csv",
+        quadratic=False,
         save_labels=False,
     )
 
 
     anomalies_df = filter_layer.get_anomaly_reports(
         write_to_file=True,
-        filename="debug/flagged_reports_quad_{}_full.csv".format(window_size)
+        filename="data/outputs_2016/flagged_reports_vol_{}_full.csv".format(window_size)
         )
     date_lookup = filter_layer.date_lookup
     city_lookup = filter_layer.city_lookup
 
-    drop_keys = ["timeseries", "anomalies"]
+    drop_keys = ["timeseries", "anomalies", "anomaly_indices"]
     for key in drop_keys:
         for sub_dict in city_lookup.values():
             if isinstance(sub_dict, dict):
@@ -54,10 +54,10 @@ def main():
                 except KeyError:
                     pass
 
-    with open("debug/filter_full_date_lookup_{}.json".format(window_size), mode="w") as f:
+    with open("data/outputs_2016/filter_full_vol_date_lookup_{}.json".format(window_size), mode="w") as f:
         json.dump(date_lookup, f)
 
-    with open("debug/filter_full_city_lookup_{}.json".format(window_size), mode="w") as f:
+    with open("data/outputs_2016/filter_full_vol_city_lookup_{}.json".format(window_size), mode="w") as f:
         json.dump(city_lookup, f)
 
     filter_finish = time.time()
@@ -94,7 +94,7 @@ def main():
                                     finder_finish-filter_start
     )
 
-    with open("debug/debug_full_final_date_lookup_{}.json".format(window_size), mode="w") as f:
+    with open("data/outputs_2016/full_final_vol_date_lookup_{}.json".format(window_size), mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
     city_lookup = finder_layer.city_lookup
@@ -108,7 +108,7 @@ def main():
                 except KeyError:
                     pass
 
-    with open("debug/debug_full_final_city_lookup_{}.json".format(window_size), mode="w") as f:
+    with open("data/outputs_2016/full_final_vol_city_lookup_{}.json".format(window_size), mode="w") as f:
         json.dump(city_lookup, f)
 
     y_true = finder_layer.flagged_df["critical"].values
