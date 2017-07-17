@@ -221,15 +221,15 @@ class StabilitasFinder(object):
             "nb": MultinomialNB(),
             "gbc": GradientBoostingClassifier(
                 learning_rate=0.1,
-                n_estimators=100,
+                n_estimators=1000,
                 max_depth=13,
                 min_samples_split=3,
                 min_samples_leaf=1,
-                max_features="sqrt",
+                max_features=100,
                 subsample=0.3
             ),
             "rfc": RandomForestClassifier(
-                n_estimators=100,
+                n_estimators=1000,
                 n_jobs=-1,
                 max_depth=None,
                 min_samples_split=10,
@@ -237,7 +237,7 @@ class StabilitasFinder(object):
                 max_features=100
             ),
             "svm": SVC(
-                kernel="rbf",
+                kernel="linear",
                 C=10.,
                 probability=True,
             ),

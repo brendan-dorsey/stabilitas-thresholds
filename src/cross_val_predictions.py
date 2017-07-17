@@ -11,10 +11,10 @@ plt.style.use("ggplot")
 
 def main():
 
-    with open("data/outputs_2016/1wk_window/filter_date_lookup_1wk.json", "r") as f:
+    with open("data/outputs_2016/severity_scoring_1wk_window/filter_date_lookup_1wk.json", "r") as f:
         date_lookup = json.load(f)
 
-    with open("data/outputs_2016/1wk_window/filter_city_lookup_1wk.json", "r") as f:
+    with open("data/outputs_2016/severity_scoring_1wk_window/filter_city_lookup_1wk.json", "r") as f:
         city_lookup = json.load(f)
 
     ########################################
@@ -29,11 +29,11 @@ def main():
 
     fig, ax = plt.subplots(1, figsize=(8,8))
     # Use cutoff = 10 for 2std, cutoff = 30 for 1 std
-    cutoffs = [20, 30, 40]
+    cutoffs = [30]
     for cutoff in cutoffs:
         finder = StabilitasFinder()
         finder.load_data(
-            source="data/outputs_2016/1wk_window/filter_flagged_reports_1wk.csv",
+            source="data/outputs_2016/severity_scoring_1wk_window/filter_flagged_reports_1wk.csv",
             date_lookup=date_lookup,
             city_lookup=city_lookup
         )
@@ -43,7 +43,7 @@ def main():
 
 
         # Various ranges of thresholds used in cross validation.
-        thresholds = np.linspace(0, 1, 500)
+        thresholds = np.linspace(0, 1, 200)
         # thresholds = [0.22, 0.225, 0.23, 0.235, 0.24]
         # thresholds = [0.235]
         # thresholds = [0.45, 0.47, 0.49, 0.51, 0.53, 0.55]
@@ -51,7 +51,7 @@ def main():
         # models = ["nb", "gbc", "rfc"]
         # models = ["gbc", "rfc", "svm"]
         # models = ["gbc", "rfc", "logreg", "nb"]
-        models = ["rfc"]
+        models = ["rfc", "gbc"]
         for model in models:
             false_positive_rates = []
             true_positive_rates = []
@@ -91,7 +91,7 @@ def main():
                 false_positive_rates.append(fpr)
                 true_positive_rates.append(tpr)
 
-                if (tpr > 0.7) & (fpr < 0.35):
+                if (tpr > 0.7) & (fpr < 0.5):
                     print "Model: ", model
                     print "Cutoff: ", cutoff
                     print "Threshold: ", thresholds[i]
