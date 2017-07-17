@@ -1,0 +1,35 @@
+Current Model:
+    Scoring: Volume
+    Window: 1 week
+    Cutoff: 30
+    Model: RFC
+    Probability Threshold: 0.2044
+
+    Results:
+
+      By Report:
+
+        Confusion Matrix:
+            [27892, 21095]
+            [42356, 37764]
+
+        AUC:  0.520359267068
+        Precision:  0.397044797791
+        True Positive Rate (Recall):  0.569363925859
+        False Positive Rate:  0.528650416245
+        False Discovery Rate:  0.602940967131
+        F1 Score:  0.467841357968
+
+
+      By City by Date:
+      
+        Confusion Matrix:
+            [847, 115]
+            [10714, 258014]
+
+        AUC:  0.920294035113
+        Precision:  0.0732635585157
+        True Positive Rate (Recall):  0.880457380457
+        False Positive Rate:  0.0398693102319
+        False Discovery Rate:  0.926736441484
+        F1 Score:  0.135271101174
