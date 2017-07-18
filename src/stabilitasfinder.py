@@ -104,11 +104,15 @@ class StabilitasFinder(object):
         self.flagged_df = self.flagged_df[
             self.flagged_df["start_ts"] >= start_date
         ]
+
         if end_date:
             end_date = pd.to_datetime(end_date)
             self.flagged_df = self.flagged_df[
                 self.flagged_df["start_ts"] < end_date
             ]
+
+        # Trim dummies to match
+        self.dummies = self.dummies[self.dummies.index.isin(self.flagged_df.index)]
 
 
     def label_critical_reports(self, cutoff=30):
@@ -282,7 +286,7 @@ class StabilitasFinder(object):
             if model_type == "gbc":
                 thresholds = [0.2164]
             elif model_type == "rfc":
-                thresholds = [0.14]
+                thresholds = [0.13]
 
         for train_index, test_index in kf.split(y):
             # Split, train, test on titles
@@ -301,7 +305,7 @@ class StabilitasFinder(object):
                 n_estimators=100,
                 n_jobs=-1,
                 max_depth=None,
-                min_samples_split=3,
+                min_samples_split=10,
                 min_samples_leaf=1,
                 max_features="sqrt"
             )
@@ -311,6 +315,7 @@ class StabilitasFinder(object):
             # Average title and meta probas for final output
             probas = [(title + meta) / 2 for title, meta in izip(title_probas, meta_probas)]
             cv_probas.extend(probas)
+
         for threshold in thresholds:
             predictions = [1 if prob > threshold else 0 for prob in cv_probas]
             cv_predicted.append(predictions)

@@ -13,13 +13,15 @@ import json
 
 def main():
     finder = StabilitasFinder()
-    finder.load_data(source="data/outputs_2016/severity_scoring_1wk_window/filter_flagged_reports_1wk.csv")
+    finder.load_data(source="data/outputs_2016/volume_scoring_1wk_window/flagged_reports_vol_1w_full.csv")
+    finder.trim_dates("2016-10-21", "2017-01-01")
     finder.label_critical_reports(cutoff=30)
-    X = finder.flagged_df["title"].values
+    # X = finder.flagged_df["title"].values
+    X = finder.dummies.values
     y = finder.flagged_df["critical"].values
 
     pipe = Pipeline([
-        ("vectorizer", TfidfVectorizer()),
+        # ("vectorizer", TfidfVectorizer()),
         ("classifier", RandomForestClassifier())
     ])
 
@@ -315,36 +317,36 @@ def main():
     # }
 
 
-    param_grid8 = {
-        "vectorizer__analyzer": ["word"],
-        "vectorizer__stop_words": ["english"],
-        "vectorizer__max_features": [2500],
-        "classifier__n_estimators": [192],
-        "classifier__max_depth": [None],
-        "classifier__min_samples_split": [2, 4, 6, 8, 10],
-        "classifier__min_samples_leaf": [1, 2, 3],
-        "classifier__max_features": ["sqrt", 100, 200, 500],
-        "classifier__n_jobs": [-1]
-    }
-    grid8 = GridSearchCV(
-        estimator=pipe,
-        cv=5,
-        n_jobs=-1,
-        param_grid=param_grid8,
-        scoring = "roc_auc",
-        refit=False
-    )
-
-    grid8.fit(X, y)
-
-    print "Best AUC: ", grid8.best_score_
-    print "Best params: ", grid8.best_params_
-
-    with open("data/best_rfc_params.json", mode="w") as f:
-        json.dump(grid8.best_params_, f)
-
-    with open("data/best_rfc_score.json", mode="w") as f:
-        json.dump(grid8.best_score_, f)
+    # param_grid8 = {
+    #     "vectorizer__analyzer": ["word"],
+    #     "vectorizer__stop_words": ["english"],
+    #     "vectorizer__max_features": [2500],
+    #     "classifier__n_estimators": [192],
+    #     "classifier__max_depth": [None],
+    #     "classifier__min_samples_split": [2, 4, 6, 8, 10],
+    #     "classifier__min_samples_leaf": [1, 2, 3],
+    #     "classifier__max_features": ["sqrt", 100, 200, 500],
+    #     "classifier__n_jobs": [-1]
+    # }
+    # grid8 = GridSearchCV(
+    #     estimator=pipe,
+    #     cv=5,
+    #     n_jobs=-1,
+    #     param_grid=param_grid8,
+    #     scoring = "roc_auc",
+    #     refit=False
+    # )
+    #
+    # grid8.fit(X, y)
+    #
+    # print "Best AUC: ", grid8.best_score_
+    # print "Best params: ", grid8.best_params_
+    #
+    # with open("data/best_rfc_params.json", mode="w") as f:
+    #     json.dump(grid8.best_params_, f)
+    #
+    # with open("data/best_rfc_score.json", mode="w") as f:
+    #     json.dump(grid8.best_score_, f)
 
     # Grid 8 Results:
     # Best AUC:  0.562499473128
@@ -357,6 +359,43 @@ def main():
     #     'classifier__min_samples_split': 10,
     #     'classifier__min_samples_leaf': 1,
     #     'classifier__max_features': '100',
+    #     'classifier__n_jobs': -1,
+    # }
+
+    ########### GRID SEARCH FOR METADATA MODEL ###############
+    param_grid9 = {
+        # "vectorizer__analyzer": ["word"],
+        # "vectorizer__stop_words": ["english"],
+        # "vectorizer__max_features": [2500],
+        "classifier__n_estimators": [100],
+        "classifier__max_depth": [None],
+        "classifier__min_samples_split": [2, 4, 6, 10],
+        "classifier__min_samples_leaf": [1,],
+        "classifier__max_features": ["sqrt",],
+        "classifier__n_jobs": [-1]
+    }
+    grid9 = GridSearchCV(
+        estimator=pipe,
+        cv=5,
+        n_jobs=-1,
+        param_grid=param_grid9,
+        scoring = "roc_auc",
+        refit=False
+    )
+
+    grid9.fit(X, y)
+
+    print "Best AUC: ", grid9.best_score_
+    print "Best params: ", grid9.best_params_
+
+    # Grid 9 Results:
+    # Best AUC:  0.848835467822
+    # Best params:  {
+    #     'classifier__n_estimators': 100,
+    #     'classifier__max_depth': None
+    #     'classifier__min_samples_split': 10,
+    #     'classifier__min_samples_leaf': 1,
+    #     'classifier__max_features': 'sqrt',
     #     'classifier__n_jobs': -1,
     # }
 
