@@ -8,6 +8,7 @@ from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 import time
+from itertools import izip
 
 
 class StabilitasFinder(object):
@@ -60,6 +61,7 @@ class StabilitasFinder(object):
         self.date_lookup = date_lookup
         self.city_lookup = city_lookup
 
+        # Check to see if data is coming from disk or from data engine
         if isinstance(source, str):
             df = pd.read_csv(source)
             df["start_ts"] = pd.to_datetime(df["start_ts"])
@@ -73,10 +75,41 @@ class StabilitasFinder(object):
             df.loc[:,"start_ts"] = pd.to_datetime(df["start_ts"])
             self.flagged_df = df.sort_values("start_ts")
 
+        # Reset multi-index to integer index
         self.flagged_df.reset_index(drop=True, inplace=True)
         self.flagged_df["index_copy"] = np.arange(len(self.flagged_df))
 
+        # Build up dummy columns in separate dataframe
+        # Dummies for severity
+        self.dummies = pd.get_dummies(self.flagged_df["severity"], drop_first=True)
+
+        # Dummies for city
+        city_dum = pd.get_dummies(self.flagged_df["city"], drop_first=True)
+        self.dummies = pd.merge(self.dummies, city_dum, left_index=True, right_index=True)
+
+        # Dummies for event type
+        type_dum = pd.get_dummies(self.flagged_df["report_type"], drop_first=True)
+        self.dummies = pd.merge(self.dummies, type_dum, left_index=True, right_index=True)
+
+
         print "     Data loaded in {} seconds.".format(time.time()-start)
+
+    def trim_dates(self, start_date, end_date=False):
+        """
+        Method to trim reports between [start, stop) datetimes.
+        Can accept any format that can be read by pandas into
+        datetime format.
+        """
+        start_date = pd.to_datetime(start_date)
+        self.flagged_df = self.flagged_df[
+            self.flagged_df["start_ts"] >= start_date
+        ]
+        if end_date:
+            end_date = pd.to_datetime(end_date)
+            self.flagged_df = self.flagged_df[
+                self.flagged_df["start_ts"] < end_date
+            ]
+
 
     def label_critical_reports(self, cutoff=30):
         start = time.time()
@@ -149,8 +182,7 @@ class StabilitasFinder(object):
 
     def fit(self):
         """
-        Preprocess date using TF-IDF Vecotrization.  Fit an SKLearn Multinomial
-        Naive Bayes classifier to the training data provided.
+        Preprocess date using TF-IDF Vecotrization.  Fit an SKLearn Random Forest classifier to the training data provided.
 
         kwargs:
         mode - str, "evaluate", "train" or "predict", default: "evaluate"
@@ -158,14 +190,13 @@ class StabilitasFinder(object):
             Use "train" to train the model on a complete dataset
             Use "predict" to use the model on a live dataset
         """
-        self.model = GradientBoostingClassifier(
-            learning_rate=0.005,
-            n_estimators=2000,
-            max_depth=13,
-            min_samples_split=3,
+        self.model = RandomForestClassifier(
+            n_estimators=100,
+            n_jobs=-1,
+            max_depth=None,
+            min_samples_split=10,
             min_samples_leaf=1,
-            max_features="sqrt",
-            subsample=0.3
+            max_features=100
         )
         self.model.fit(self.X_train, self.y_train)
 
@@ -186,7 +217,7 @@ class StabilitasFinder(object):
         return self.probas
 
 
-    def predict(self, X=None, y=None, threshold=0.2164):
+    def predict(self, X=None, y=None, threshold=0.14):
         """
         Classify reports as critical or non-critical, based off predicted
         probability and threshold.
@@ -208,6 +239,7 @@ class StabilitasFinder(object):
         start = time.time()
         print "Generating cross-validated predictions..."
         X = self.flagged_df["title"].values
+        X_meta = self.dummies.values
         y = self.flagged_df["critical"].values
         vectorizer = TfidfVectorizer(
             analyzer="word",
@@ -250,16 +282,34 @@ class StabilitasFinder(object):
             if model_type == "gbc":
                 thresholds = [0.2164]
             elif model_type == "rfc":
-                thresholds = [0.2044]
+                thresholds = [0.14]
 
-        for train_index, test_index in kf.split(X):
+        for train_index, test_index in kf.split(y):
+            # Split, train, test on titles
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
             X_train = vectorizer.fit_transform(X_train)
             X_test = vectorizer.transform(X_test)
             model = models[model_type]
             model.fit(X_train, y_train)
-            probas = [prob[1] for prob in model.predict_proba(X_test.toarray())]
+            title_probas = [prob[1] for prob in model.predict_proba(X_test.toarray())]
+
+            # Split, train, test on metadata
+            X_train_meta, X_test_meta = X_meta[train_index], X_meta[test_index]
+            y_train_meta, y_test_meta = y[train_index], y[test_index]
+            model_meta = RandomForestClassifier(
+                n_estimators=100,
+                n_jobs=-1,
+                max_depth=None,
+                min_samples_split=3,
+                min_samples_leaf=1,
+                max_features="sqrt"
+            )
+            model_meta.fit(X_train, y_train)
+            meta_probas = [prob[1] for prob in model_meta.predict_proba(X_test)]
+
+            # Average title and meta probas for final output
+            probas = [(title + meta) / 2 for title, meta in izip(title_probas, meta_probas)]
             cv_probas.extend(probas)
         for threshold in thresholds:
             predictions = [1 if prob > threshold else 0 for prob in cv_probas]
@@ -272,6 +322,8 @@ class StabilitasFinder(object):
                 self.flagged_df["critical"].values,
                 self.flagged_df["predicted"].values
             )
+            self.feature_importances_ = model.feature_importances_
+            self.vocabulary_ = vectorizer.vocabulary_
 
         print "     Predictions made in {} seconds.".format(time.time()-start)
         return cv_predicted
