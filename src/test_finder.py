@@ -18,21 +18,21 @@ def main():
     # window = "4wk"
     # model_type = "rfc"
 
-    with open("data/outputs_2016/severity_scoring_1wk_window/filter_date_lookup_1wk.json") as f:
+    with open("data/outputs_2016/severity_scoring_4wk_window/filter_date_lookup_4wk.json") as f:
         date_lookup = json.load(f)
 
-    with open("data/outputs_2016/severity_scoring_1wk_window/filter_city_lookup_1wk.json") as f:
+    with open("data/outputs_2016/severity_scoring_4wk_window/filter_city_lookup_4wk.json") as f:
         city_lookup = json.load(f)
 
     finder_start = time.time()
     finder_layer = StabilitasFinder()
     finder_layer.load_data(
-        source="data/outputs_2016/severity_scoring_1wk_window/filter_flagged_reports_1wk.csv",
+        source="data/outputs_2016/severity_scoring_4wk_window/filter_flagged_reports_4wk.csv",
         date_lookup=date_lookup,
         city_lookup=city_lookup
     )
 
-    finder_layer.label_critical_reports(cutoff=30)
+    finder_layer.label_critical_reports(cutoff=50)
 
     finder_layer.cross_val_predict(thresholds=[0.225], model_type="rfc")
     finder_layer._labeled_critical_cities_by_day()
@@ -47,7 +47,7 @@ def main():
                                     finder_finish-finder_start
     )
 
-    with open("data/outputs_2016/severity_scoring_1wk_window/final_date_lookup_1wk.json", mode="w") as f:
+    with open("data/outputs_2016/severity_scoring_4wk_window/final_date_lookup_4wk.json", mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
     city_lookup = finder_layer.city_lookup
@@ -61,7 +61,7 @@ def main():
                 except KeyError:
                     pass
 
-    with open("data/outputs_2016/severity_scoring_1wk_window/final_city_lookup_1wk.json", mode="w") as f:
+    with open("data/outputs_2016/severity_scoring_4wk_window/final_city_lookup_4wk.json", mode="w") as f:
         json.dump(city_lookup, f)
 
     y_true = finder_layer.flagged_df["critical"].values

@@ -121,3 +121,30 @@ Parameters:
       False Positive Rate:  0.0241696786659
       False Discovery Rate:  0.900042762455
       F1 Score:  0.177167219327
+
+
+      Quadratic 4 Week:
+
+        Per Report:
+        Confusion Matrix:
+          [36698, 19201]
+          [49075, 64071]
+
+        AUC:  0.611386922168
+        Precision:  0.427845267797
+        True Positive Rate (Recall):  0.656493738819
+        False Positive Rate:  0.433727805421
+        False Discovery Rate:  0.572143073659
+        F1 Score:  0.518062594407
+
+        Per City Per Day:
+          Confusion Matrix:
+            [555, 189]
+            [7567, 353663]
+
+        AUC:  0.862509934694
+        Precision:  0.0683329229254
+        True Positive Rate (Recall):  0.745967741935
+        False Positive Rate:  0.0209478725466
+        False Discovery Rate:  0.931667077075
+        F1 Score:  0.125197383262
