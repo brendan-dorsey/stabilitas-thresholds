@@ -18,16 +18,16 @@ def main():
     # window = "4wk"
     # model_type = "rfc"
 
-    with open("data/outputs_2016/volume_scoring_1wk_window/filter_vol_date_lookup_1w.json") as f:
+    with open("data/outputs_2016/severity_scoring_1wk_window/filter_date_lookup_1wk.json") as f:
         date_lookup = json.load(f)
 
-    with open("data/outputs_2016/volume_scoring_1wk_window/filter_vol_date_lookup_1w.json") as f:
+    with open("data/outputs_2016/severity_scoring_1wk_window/filter_city_lookup_1wk.json") as f:
         city_lookup = json.load(f)
 
     finder_start = time.time()
     finder_layer = StabilitasFinder()
     finder_layer.load_data(
-        source="data/outputs_2016/volume_scoring_1wk_window/flagged_reports_vol_1w_full.csv",
+        source="data/outputs_2016/severity_scoring_1wk_window/filter_flagged_reports_1wk.csv",
         date_lookup=date_lookup,
         city_lookup=city_lookup
     )
@@ -47,7 +47,7 @@ def main():
                                     finder_finish-finder_start
     )
 
-    with open("data/outputs_2016/volume_scoring_1wk_window/final_vol_date_lookup_1w.json", mode="w") as f:
+    with open("data/outputs_2016/severity_scoring_1wk_window/final_date_lookup_1wk.json", mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
     city_lookup = finder_layer.city_lookup
@@ -61,7 +61,7 @@ def main():
                 except KeyError:
                     pass
 
-    with open("data/outputs_2016/volume_scoring_1wk_window/final_vol_city_lookup_1w.json", mode="w") as f:
+    with open("data/outputs_2016/severity_scoring_1wk_window/final_city_lookup_1wk.json", mode="w") as f:
         json.dump(city_lookup, f)
 
     y_true = finder_layer.flagged_df["critical"].values
