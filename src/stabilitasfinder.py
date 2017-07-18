@@ -286,7 +286,7 @@ class StabilitasFinder(object):
             if model_type == "gbc":
                 thresholds = [0.2164]
             elif model_type == "rfc":
-                thresholds = [0.13]
+                thresholds = [0.225]
 
         for train_index, test_index in kf.split(y):
             # Split, train, test on titles
@@ -309,11 +309,12 @@ class StabilitasFinder(object):
                 min_samples_leaf=1,
                 max_features="sqrt"
             )
-            model_meta.fit(X_train, y_train)
-            meta_probas = [prob[1] for prob in model_meta.predict_proba(X_test)]
+            model_meta.fit(X_train_meta, y_train_meta)
+            meta_probas = [prob[1] for prob in model_meta.predict_proba(X_test_meta)]
+            # cv_probas.extend(meta_probas)
 
             # Average title and meta probas for final output
-            probas = [(title + meta) / 2 for title, meta in izip(title_probas, meta_probas)]
+            probas = [(title + 2*meta) / 3 for title, meta in izip(title_probas, meta_probas)]
             cv_probas.extend(probas)
 
         for threshold in thresholds:
@@ -394,7 +395,7 @@ class StabilitasFinder(object):
             print "Needs lookup dicts from Filter Layer"
         else:
             print "Extracting most critical reports..."
-            for city in self.flagged_df["city"].unique():
+            for city in self.city_lookup.keys():
                 city_df = self.flagged_df[self.flagged_df["city"] == city]
                 city_df.loc[:,"date"] = city_df["start_ts"].apply(lambda x: x.date())
                 days = set(city_df["date"])
@@ -408,4 +409,4 @@ class StabilitasFinder(object):
                     try:
                         self.city_lookup[city][key] = (proba, title)
                     except KeyError:
-                        self.city_lookup[city][key] = (proba, title)
+                        self.city_lookup[city][key] = (0, "None predicted critical")

@@ -34,9 +34,9 @@ def main():
         # ("2016-12-01", "2017-01-01"),
         # ("2016-11-01", "2017-01-01"),
         ("2016-10-21", "2017-01-01"),
-        ("2016-10-11", "2017-01-01"),
+        # ("2016-10-11", "2017-01-01"),
         ("2016-10-01", "2017-01-01"),
-        # ("2016-07-01", "2017-01-01"),
+        ("2016-01-01", "2017-01-01"),
     ]
     for start_date, end_date in cutoffs:
         finder = StabilitasFinder()
@@ -144,7 +144,7 @@ def main():
     # )
 
     ax.plot([0,1], [0, 1], linestyle="--", color="k")
-    ax.plot([0,1], [0.7, 0.7], linestyle=":", color="g", label="Target Recall")
+    ax.plot([0,1], [0.7, 0.7], linestyle=":", color="g", label="Target Recall per Report")
 
     ax.set_xlabel("False Positive Rate")
     ax.set_ylabel("True Positive Rate")

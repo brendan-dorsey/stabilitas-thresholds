@@ -40,3 +40,58 @@ Parameters:
         False Positive Rate:  0.0398693102319
         False Discovery Rate:  0.926736441484
         F1 Score:  0.135271101174
+
+
+
+
+        Model:  rfc
+        Start Date:  2016-10-21
+        Threshold:  0.425
+        TPR/Recall:  0.702702702703
+        FPR:  0.0875476703698
+        Precision:  0.704863051984
+        F1 score:  0.703781219478
+
+      2x weight on metadata
+        Model:  rfc
+        Start Date:  2016-10-21
+        Threshold:  0.365
+        TPR/Recall:  0.70130955698
+        FPR:  0.0851434256342
+        Precision:  0.710214446953
+        F1 score:  0.7057339128
+
+
+
+
+
+
+
+2x weight on metadata
+    Volume 1 Week
+
+        Confusion Matrix:
+          [34366, 14621]
+          [39776, 40344]
+
+        AUC:  0.602538871383
+        Precision:  0.46350970422
+        True Positive Rate (Recall):  0.701518739283
+        False Positive Rate:  0.496449120705
+        False Discovery Rate:  0.53647680833
+        F1 Score:  0.558202239891
+        Confusion Matrix:
+          [755, 207]
+          [7060, 264648]
+
+        AUC:  0.879419754061
+        Precision:  0.0966090850928
+        True Positive Rate (Recall):  0.784823284823
+        False Positive Rate:  0.0259837767015
+        False Discovery Rate:  0.903390914907
+        F1 Score:  0.172040560556
+
+
+    Quadratic 1 Week
+
+        

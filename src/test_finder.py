@@ -15,26 +15,26 @@ def main():
     """
     Function to test implementation of Stabilitas Finder.
     """
-    window = "4wk"
+    # window = "4wk"
     # model_type = "rfc"
 
-    with open("debug/filter_full_date_lookup_{}.json".format(window)) as f:
+    with open("data/outputs_2016/volume_scoring_1wk_window/filter_vol_date_lookup_1w.json") as f:
         date_lookup = json.load(f)
 
-    with open("debug/filter_full_city_lookup_{}.json".format(window)) as f:
+    with open("data/outputs_2016/volume_scoring_1wk_window/filter_vol_date_lookup_1w.json") as f:
         city_lookup = json.load(f)
 
     finder_start = time.time()
     finder_layer = StabilitasFinder()
     finder_layer.load_data(
-        source="debug/flagged_reports_quad_{}_full.csv".format(window),
+        source="data/outputs_2016/volume_scoring_1wk_window/flagged_reports_vol_1w_full.csv",
         date_lookup=date_lookup,
         city_lookup=city_lookup
     )
 
-    finder_layer.label_critical_reports(cutoff=50)
+    finder_layer.label_critical_reports(cutoff=30)
 
-    finder_layer.cross_val_predict()
+    finder_layer.cross_val_predict(thresholds=[0.225], model_type="rfc")
     finder_layer._labeled_critical_cities_by_day()
     finder_layer._predicted_critical_cities_by_day()
     finder_layer._most_critical_report_per_city_per_day()
@@ -47,12 +47,12 @@ def main():
                                     finder_finish-finder_start
     )
 
-    with open("debug/debug_full_finder_date_lookup_{}.json".format(window), mode="w") as f:
+    with open("data/outputs_2016/volume_scoring_1wk_window/final_vol_date_lookup_1w.json", mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
     city_lookup = finder_layer.city_lookup
 
-    drop_keys = ["timeseries", "anomalies"]
+    drop_keys = ["timeseries", "anomalies", "anomaly_indices"]
     for key in drop_keys:
         for sub_dict in city_lookup.values():
             if isinstance(sub_dict, dict):
@@ -61,7 +61,7 @@ def main():
                 except KeyError:
                     pass
 
-    with open("debug/debug_full_finder_city_lookup_{}.json".format(window), mode="w") as f:
+    with open("data/outputs_2016/volume_scoring_1wk_window/final_vol_city_lookup_1w.json", mode="w") as f:
         json.dump(city_lookup, f)
 
     y_true = finder_layer.flagged_df["critical"].values
@@ -102,6 +102,80 @@ def main():
     print "F1 Score: ", f1
 
 
+    ########################################
+    ########################################
+    ##                                    ##
+    ##  Code for by city by day metrics   ##
+    ##                                    ##
+    ########################################
+    ########################################
+
+    date_lookup = finder_layer.date_lookup
+    dates = date_lookup.keys()
+
+    cities = set()
+    for date in dates:
+        try:
+            for city in date_lookup[date][0]:
+                cities.add(city)
+        except IndexError:
+            # print date
+            # print date_lookup[date]
+            continue
+
+    city_date_pairs = product(cities, dates)
+
+    y_true = []
+    y_pred = []
+    for city, date in city_date_pairs:
+        try:
+            if city in date_lookup[date][1]:
+                y_true.append(1)
+            else:
+                y_true.append(0)
+            if city in date_lookup[date][2]:
+                y_pred.append(1)
+            else:
+                y_pred.append(0)
+        except:
+            # print date
+            # print date_lookup[date]
+            continue
+
+    conf_mat = confusion_matrix(y_true, y_pred)
+    # Transpoition of sklearn confusion matrix to this format:
+    # TP  FN
+    # FP  TN
+    conf_mat = [
+        [conf_mat[1][1], conf_mat[1][0]],
+        [conf_mat[0][1], conf_mat[0][0]]
+    ]
+
+    # True Positive Rate: TP / TP + FN
+    tpr = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[0][1])
+    # False Positive Rate: FP / FP + TN
+    fpr = float(conf_mat[1][0]) / (conf_mat[1][0] + conf_mat[1][1])
+    # Precision: TP / TP + FP
+    precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0])
+    # False Discovery Rate: FP / TP + FP
+    fdr = float(conf_mat[1][0]) / (conf_mat[0][0] + conf_mat[1][0])
+    if (precision + tpr) == 0:
+        f1 = 0
+    else:
+        f1 = 2 * (precision * tpr) / (precision + tpr)
+
+    print "Confusion Matrix:"
+    for row in conf_mat:
+        print "     ", row
+
+    print ""
+    print "AUC: ", roc_auc_score(y_true, y_pred)
+    print "Precision: ", precision
+    print "True Positive Rate (Recall): ", tpr
+    print "False Positive Rate: ", fpr
+    print "False Discovery Rate: ", fdr
+    print "F1 Score: ", f1
+
 
 
 
@@ -109,7 +183,7 @@ def main():
     ########################################
     ########################################
     ##                                    ##
-    ##  The code below is for generating  ##
+    ##  The code below is oudated for     ##
     ##  a ROC curve and determining an    ##
     ##  optimal decision threshold.       ##
     ##                                    ##
