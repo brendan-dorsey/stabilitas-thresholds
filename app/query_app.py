@@ -135,6 +135,7 @@ def map():
 
 @app.route("/dist/<path:path>")
 def static_proxy(path):
+    "Route to css files to enable bootstrap"
     return app.send_static_file("dist/"+path)
 
 if __name__ == '__main__':
