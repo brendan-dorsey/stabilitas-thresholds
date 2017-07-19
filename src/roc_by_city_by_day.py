@@ -47,22 +47,25 @@ def main():
     f1_scores = []
 
     # thresholds = np.linspace(0, 1, 201)
-    thresholds = [0.14, 0.22]
+    # thresholds = [0.14, 0.22]
+    thresholds = list(np.linspace(0, 0.3, 61))
+    thresholds.append(1)
 
     for threshold in thresholds:
+        print "     Checking threshold = ", threshold
         try:
-            del finder_layer.flagged_df["predicted"]
+            del finder.flagged_df["predicted"]
         except:
-            continue
-        finder_layer.date_lookup = date_lookup
-        finder_layer.city_lookup = city_lookup
+            pass
+        finder.date_lookup = date_lookup
+        finder.city_lookup = city_lookup
 
-        finder_layer.cross_val_predict(thresholds=[threshold], model_type="rfc")
-        finder_layer._labeled_critical_cities_by_day()
-        finder_layer._predicted_critical_cities_by_day()
-        finder_layer._most_critical_report_per_city_per_day()
+        finder.cross_val_predict(thresholds=[threshold], model_type="rfc")
+        finder._labeled_critical_cities_by_day()
+        finder._predicted_critical_cities_by_day()
+        finder._most_critical_report_per_city_per_day()
 
-        temp_date_lookup = finder_layer.date_lookup
+        temp_date_lookup = finder.date_lookup
         dates = temp_date_lookup.keys()
 
         cities = set()
@@ -71,7 +74,6 @@ def main():
                 for city in temp_date_lookup[date][0]:
                     cities.add(city)
             except IndexError:
-
                 continue
 
         city_date_pairs = product(cities, dates)
@@ -129,15 +131,25 @@ def main():
         else:
             f1 = 2 * (precision * tpr) / (precision + tpr)
 
-        if (tpr > 0.95) & (fpr < 0.1):
-            print "Model: ", model
-            print "Start Date: ", start_date
-            print "Threshold: ", thresholds[i]
+        true_positive_rates.append(tpr)
+        false_positive_rates.append(fpr)
+        f1_scores.append(f1)
+
+        # print "Threshold: ", threshold
+        # print "TPR/Recall: ", tpr
+        # print "FPR: ", fpr
+        # print "Precision: ", precision
+        # print "F1 score: ", f1
+        # print ""
+
+        if (tpr > 0.9):
+            print "Threshold: ", threshold
             print "TPR/Recall: ", tpr
             print "FPR: ", fpr
             print "Precision: ", precision
             print "F1 score: ", f1
             print ""
+
 
     area = auc(false_positive_rates, true_positive_rates)
 

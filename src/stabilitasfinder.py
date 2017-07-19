@@ -265,7 +265,7 @@ class StabilitasFinder(object):
                 subsample=0.3
             ),
             "rfc": RandomForestClassifier(
-                n_estimators=100,
+                n_estimators=24,
                 n_jobs=-1,
                 max_depth=None,
                 min_samples_split=10,
@@ -302,7 +302,7 @@ class StabilitasFinder(object):
             X_train_meta, X_test_meta = X_meta[train_index], X_meta[test_index]
             y_train_meta, y_test_meta = y[train_index], y[test_index]
             model_meta = RandomForestClassifier(
-                n_estimators=100,
+                n_estimators=24,
                 n_jobs=-1,
                 max_depth=None,
                 min_samples_split=10,
@@ -313,7 +313,7 @@ class StabilitasFinder(object):
             meta_probas = [prob[1] for prob in model_meta.predict_proba(X_test_meta)]
             # cv_probas.extend(meta_probas)
 
-            # Average title and meta probas for final output
+            # Average title and double weight meta probas for final output
             probas = [(title + 2*meta) / 3 for title, meta in izip(title_probas, meta_probas)]
             cv_probas.extend(probas)
 
