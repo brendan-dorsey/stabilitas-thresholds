@@ -34,7 +34,7 @@ def main():
 
     finder_layer.label_critical_reports(cutoff=30)
 
-    finder_layer.cross_val_predict(thresholds=[0.205], model_type="rfc")
+    finder_layer.cross_val_predict(thresholds=[0.125], model_type="rfc")
     finder_layer._labeled_critical_cities_by_day()
     finder_layer._predicted_critical_cities_by_day()
     finder_layer._most_critical_report_per_city_per_day()
