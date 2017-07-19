@@ -48,8 +48,9 @@ def main():
 
     # thresholds = np.linspace(0, 1, 201)
     # thresholds = [0.14, 0.22]
-    thresholds = list(np.linspace(0, 0.3, 61))
+    thresholds = list(np.arange(0.1, 0.25, step=0.01))
     thresholds.append(1)
+    thresholds.insert(0, 0)
 
     for threshold in thresholds:
         print "     Checking threshold = ", threshold

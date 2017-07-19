@@ -148,3 +148,31 @@ Parameters:
         False Positive Rate:  0.0209478725466
         False Discovery Rate:  0.931667077075
         F1 Score:  0.125197383262
+
+
+.0145 (Quadratic)
+
+
+Confusion Matrix:
+      [45715, 11288]
+      [59681, 35597]
+
+AUC:  0.587793645611
+Precision:  0.433740998321
+True Positive Rate (Recall):  0.801961265876
+False Positive Rate:  0.626381469159
+False Discovery Rate:  0.566249513743
+F1 Score:  0.562989144156
+Confusion Matrix:
+      [1045, 156]
+      [11015, 337314]
+
+AUC:  0.919242920086
+Precision:  0.0866500829187
+True Positive Rate (Recall):  0.870108243131
+False Positive Rate:  0.0316224029581
+False Discovery Rate:  0.913349917081
+F1 Score:  0.157605007164
+
+
+0.205 (Quadratic)
