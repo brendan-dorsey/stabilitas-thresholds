@@ -188,25 +188,25 @@ F1 Score:  0.157605007164
 0.125 (Volume)
 
 Confusion Matrix:
-      [40006, 8981]
-      [52954, 27166]
+      [40068, 8919]
+      [52548, 27572]
 
-AUC:  0.577866023194
-Precision:  0.43035251342
-True Positive Rate (Recall):  0.816648975259
-False Positive Rate:  0.660925350408
-False Discovery Rate:  0.569636729381
-F1 Score:  0.563667232598
+AUC:  0.581032543597
+Precision:  0.432620361273
+True Positive Rate (Recall):  0.817914591328
+False Positive Rate:  0.655858014753
+False Discovery Rate:  0.567368841573
+F1 Score:  0.565912220614
 Confusion Matrix:
-      [850, 112]
-      [10462, 261246]
+      [852, 110]
+      [10307, 261401]
 
-AUC:  0.922535656246
-Precision:  0.0751414427157
-True Positive Rate (Recall):  0.883575883576
-False Positive Rate:  0.0385045710837
-False Discovery Rate:  0.924858557284
-F1 Score:  0.138504155125
+AUC:  0.923860389962
+Precision:  0.0763509275025
+True Positive Rate (Recall):  0.885654885655
+False Positive Rate:  0.0379341057312
+False Discovery Rate:  0.923649072498
+F1 Score:  0.140582460193
 
 
 
