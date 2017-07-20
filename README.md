@@ -38,6 +38,8 @@ regions to use given the data I had. I used silhouette scores to determine that 
 [GeoNames](http://http://download.geonames.org/export/dump/) and determined that 
 there are 1375 cities with population 300,000 or greater. 
 
+![kMeans Clustering](images/KMeans_chart.png)
+
 **I used these 1375 cities as the centroids for clustering the data, and then mapped 
 each report to the closest of those cities as measured by haversine distance.**
 
