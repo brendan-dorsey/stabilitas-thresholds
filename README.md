@@ -118,7 +118,7 @@ webserver.
 The most challenging aspect of this project was unusual behavior from the model as I
 applied it to larger time windows. Specifically, performance on data from October 21, 
 2016 until the end of the year was excellent, but dropped sharply across all metrics 
-on data from October 11 to the end of the year. This trend continued steadily as more
+on data from October 01 to the end of the year. This trend continued steadily as more
 data was added, and indicates a serious underlying issue in the data. I am still 
 investigating potential causes and solutions, and this will be my primary focus until
 that issue is resolved. 
