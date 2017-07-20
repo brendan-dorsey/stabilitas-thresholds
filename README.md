@@ -62,7 +62,7 @@ performance, but still narrowly underperformed compared to volume-based scoring.
 
 **Risk is quantified as the total number of reports mapped to a given city, 
 calculated in 3 minute increments.**
-![Berlin Data](berlin_data.png)
+![Berlin Data](images/berlin_data.png)
 
 
 ### Labeling Data
