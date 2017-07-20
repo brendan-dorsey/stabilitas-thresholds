@@ -121,6 +121,8 @@ data was added, and indicates a serious underlying issue in the data. I am still
 investigating potential causes and solutions, and this will be my primary focus until
 that issue is resolved. 
 
+![Data Performance Challenge](images/data_performance_challenge.png)
+
 Possible causes are seasonality, inconsistent patterns within the data, increase 
 noise in some months (making an already heavily unbalanced classes much more 
 extreme). There may have also been a distinct change in the data processing pipeline
