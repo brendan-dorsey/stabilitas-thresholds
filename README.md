@@ -101,6 +101,8 @@ precision, but future work will include tuning the weighting parameter.
 Language Processing) and metadata to predict the probability a given report will 
 correlate to an anomaly burst in the next 24 hours.**
 
+![Dashboard Demo](images/thresholds_demo.gif)
+
 
 ### Tech Stack
 Data processing was perfomed in Python using pandas, NumPy, and Sci-Kit Learn. Data 
