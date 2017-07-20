@@ -43,19 +43,20 @@ each report to the closest of those cities as measured by haversine distance.**
 
 #### Quantifying Risk
 I explored a range of engineered features to assess the risk level in each city at 
-any given time. Machine generated severity scores are, in increasing order: low, 
-moderate, medium, high, and extreme. I explored using these scores on a 1-5 scale, on 
-a quadratic scale, and on an exponential scale, as well as just using the raw number 
-of reports. The quadratic score did the best job at highlighting reports with 
-abnormally high risk scores, and volume scoring was comparable. To determine the risk 
-over a given time interval, I explored both summing and averaging the cumulative risk 
-in each interval. Summing provided the best results, as it captures bursts of reports 
-more reliably. Finally, I had to choose a minimum time increment to measure. 3 minute increments proved to have quick response times to new data and enough breadth to 
-capture trends and changes in trends. Putting all of these together, my quadratic 
-scoring feature was overly sensitive to large numbers of medium risk reports, so I 
-applied a log transformation to the sum for each increment to rescale the results. 
-This provided excellent performance, but still narrowly underperformed compared to 
-volume-based scoring. 
+any given time. Stabilitas assigns machine generated severity scores to each report. 
+These scores are, in increasing order: low, moderate, medium, high, and extreme. I 
+explored using these scores on a 1-5 scale, on a quadratic scale, and on an 
+exponential scale, as well as just using the raw number of reports. The quadratic 
+score did the best job at highlighting reports with abnormally high risk scores, and
+volume scoring was comparable. To determine the risk over a given time interval, I
+explored both summing and averaging the cumulative risk in each interval. Summing 
+provided the best results, as it captures bursts of reports more reliably. Finally, I
+had to choose a minimum time increment to measure. 3 minute increments proved to have
+quick response times to new data and enough breadth to capture trends and changes in 
+trends. Putting all of these together, my quadratic scoring feature was overly 
+sensitive to large numbers of medium risk reports, so I applied a log transformation
+to the sum for each increment to rescale the results. This provided excellent
+performance, but still narrowly underperformed compared to volume-based scoring. 
 
 **Risk is quantified as the total number of reports mapped to a given city, 
 calculated in 3 minute increments.**
