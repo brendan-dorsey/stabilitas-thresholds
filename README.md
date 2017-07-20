@@ -84,6 +84,8 @@ mean over the preceding week.**
 **"Critical" reports are "elevated" reports with more than 30 other "elevated" 
 reports in the same city over the following 24 hours.**
 
+![Critical Cutoff Charts](images/cutoff_eda_charts_1wk.png)
+
 
 ### Predicting Anomaly Bursts
 The labeled data was passed to a pair of Random Forest Classifiers, as implemented by
