@@ -116,6 +116,8 @@ application is Flask based, using Python, JSON objects, and JavaScript to build 
 interactive bootstrap-based dashboard. The web app is hosted on its own AWS EC2 
 webserver.
 
+![Tech Stack](images/tech_stack.xcf)
+
 
 ## Next Steps
   
