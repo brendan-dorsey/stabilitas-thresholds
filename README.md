@@ -65,6 +65,7 @@ calculated in 3 minute increments.**
 ![Berlin Data](images/berlin_data.png)
 
 **Alternate Risk Score Formula**
+
 ![Risk Score](images/risk_feature.png)
 
 
