@@ -552,6 +552,10 @@ class StabilitasFilter(object):
 
 
 def severity_score_quadratic(severity_rating):
+    """
+    Function to be called with .apply() on the reports dataframe. Maps severity
+    scores to quadratic integer scale.
+    """
     if severity_rating == "low":
         return 1
     elif severity_rating == "moderate":
@@ -573,6 +577,10 @@ def label_anomalous_reports(
     dataframe,
     city
 ):
+    """
+    Function to initialize a worker for parallel processing for flagging
+    anomalies.
+    """
     print "Worker checking:      {}".format(city)
     start = time.time()
     try:
@@ -596,6 +604,9 @@ def pooled_labeling(
     dataframe,
     cities,
 ):
+    """
+    Function to govern parallel processing workers for flagging anomalies.
+    """
     start = time.time()
 
     pool = Pool((cpu_count() / 2) - 1)

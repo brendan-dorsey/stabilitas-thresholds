@@ -132,6 +132,11 @@ class StabilitasFinder(object):
         ]
 
     def label_critical_reports(self, cutoff=30):
+        """
+        Method to label critical reports.
+
+        *** NEEDS TO BE MOVED TO StabilitasFilter ***
+        """
         start = time.time()
         print "Labeling critical reports..."
         self.flagged_df["critical"] = np.zeros(len(self.flagged_df))
@@ -366,6 +371,9 @@ class StabilitasFinder(object):
         return cv_predicted
 
     def extract_critical_titles(self):
+        """
+        Method to save critical titles to disk for qualitative analysis.
+        """
         critical_df = self.flagged_df[
             (self.flagged_df["critical"] == 1) |
             (self.flagged_df["predicted"] == 1)
@@ -376,6 +384,9 @@ class StabilitasFinder(object):
         ].to_csv("eda/critical_titles.csv", sep=",", mode="w")
 
     def _labeled_critical_cities_by_day(self):
+        """
+        Method to add critical cities to the date_lookup dictionary.
+        """
         if (self.date_lookup is None) | (self.city_lookup is None):
             print "Needs lookup dicts from Filter Layer"
         else:
@@ -400,6 +411,9 @@ class StabilitasFinder(object):
                         self.date_lookup[key][1].append(city)
 
     def _predicted_critical_cities_by_day(self):
+        """
+        Method to add predicted critical cities to the date_lookup dictionary.
+        """
         if (self.date_lookup is None) | (self.city_lookup is None):
             print "Needs lookup dicts from Filter Layer"
         else:
@@ -422,6 +436,10 @@ class StabilitasFinder(object):
                         self.date_lookup[key][2].append(city)
 
     def _most_critical_report_per_city_per_day(self):
+        """
+        Method to add predicted probabilities and most critical report
+        headlines to city lookup dictionary.
+        """
         if (self.date_lookup is None) | (self.city_lookup is None):
             print "Needs lookup dicts from Filter Layer"
         else:
