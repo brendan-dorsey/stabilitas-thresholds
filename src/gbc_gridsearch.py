@@ -50,8 +50,7 @@ def main():
                 analyzer="word",
                 stop_words="english",
                 max_features=2500
-            )
-        ),
+            )),
         ("condenser", VectorsToDense()),
         ("classifier", GradientBoostingClassifier())
     ])
@@ -393,7 +392,7 @@ def main():
         cv=5,
         n_jobs=-1,
         param_grid=param_grid10,
-        scoring = "roc_auc",
+        scoring="roc_auc",
         refit=False
     )
 
@@ -412,7 +411,6 @@ def main():
     #     'classifier__max_features': 'sqrt',
     #     'classifier__subsample': 0.3,
     # }
-
 
 
 if __name__ == '__main__':

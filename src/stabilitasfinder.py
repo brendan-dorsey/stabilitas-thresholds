@@ -45,11 +45,11 @@ class StabilitasFinder(object):
                 NB: mode options are "evaluate", "train", and "predict"
         """
 
-
-    def load_data(self,
+    def load_data(
+        self,
         source,
         date_lookup=None,
-        city_lookup=None
+        city_lookup=None,
     ):
         """
         Method to load data into Finder Layer. Data must be passed from
@@ -72,7 +72,7 @@ class StabilitasFinder(object):
                 pass
         else:
             df = source
-            df.loc[:,"start_ts"] = pd.to_datetime(df["start_ts"])
+            df.loc[:, "start_ts"] = pd.to_datetime(df["start_ts"])
             self.flagged_df = df.sort_values("start_ts")
 
         # Reset multi-index to integer index
@@ -81,16 +81,31 @@ class StabilitasFinder(object):
 
         # Build up dummy columns in separate dataframe
         # Dummies for severity
-        self.dummies = pd.get_dummies(self.flagged_df["severity"], drop_first=True)
+        self.dummies = pd.get_dummies(
+            self.flagged_df["severity"],
+            drop_first=True
+        )
 
         # Dummies for city
         city_dum = pd.get_dummies(self.flagged_df["city"], drop_first=True)
-        self.dummies = pd.merge(self.dummies, city_dum, left_index=True, right_index=True)
+        self.dummies = pd.merge(
+            self.dummies,
+            city_dum,
+            left_index=True,
+            right_index=True,
+        )
 
         # Dummies for event type
-        type_dum = pd.get_dummies(self.flagged_df["report_type"], drop_first=True)
-        self.dummies = pd.merge(self.dummies, type_dum, left_index=True, right_index=True)
-
+        type_dum = pd.get_dummies(
+            self.flagged_df["report_type"],
+            drop_first=True
+        )
+        self.dummies = pd.merge(
+            self.dummies,
+            type_dum,
+            left_index=True,
+            right_index=True,
+        )
 
         print "     Data loaded in {} seconds.".format(time.time()-start)
 
@@ -112,8 +127,9 @@ class StabilitasFinder(object):
             ]
 
         # Trim dummies to match
-        self.dummies = self.dummies[self.dummies.index.isin(self.flagged_df.index)]
-
+        self.dummies = self.dummies[
+            self.dummies.index.isin(self.flagged_df.index)
+        ]
 
     def label_critical_reports(self, cutoff=30):
         start = time.time()
@@ -127,7 +143,7 @@ class StabilitasFinder(object):
             if i % 10 == 0:
                 current_time = time.time() - start
                 total_time = (current_time * total_cities) / (i+1)
-                print "     Estimated {0} seconds remaining for {1} cities".format(
+                print "     ~{0} seconds remaining for {1} cities".format(
                     int(round(total_time - current_time)),
                     total_cities - i
                 )
@@ -147,9 +163,13 @@ class StabilitasFinder(object):
                     self.flagged_df.loc[index, "critical"] = 1
 
         # critical_df = self.flagged_df[self.flagged_df["critical"] > 0]
-        # critical_df["title"].to_csv("data/critical_titles.txt", sep=" ", mode="w")
+        # critical_df["title"].to_csv(
+        #     "data/critical_titles.txt", sep=" ", mode="w"
+        # )
         # print "Critical cities by number of critical reports:"
-        # print critical_df.groupby("city").count().sort_values("critical", ascending=False)["critical"]
+        # print critical_df.groupby("city").count().sort_values(
+        #     "critical", ascending=False
+        # )["critical"]
         # print ""
         # print "Total critical reports: ", sum(self.flagged_df["critical"])
 
@@ -167,9 +187,12 @@ class StabilitasFinder(object):
             Use "predict" to use the model on a live dataset
         """
         print "Preprocessing data..."
-        X=self.flagged_df["title"]
-        y=self.flagged_df["critical"]
-        self.vectorizer = TfidfVectorizer(analyzer="word", stop_words="english")
+        X = self.flagged_df["title"]
+        y = self.flagged_df["critical"]
+        self.vectorizer = TfidfVectorizer(
+            analyzer="word",
+            stop_words="english",
+        )
 
         if mode == "evaluate":
             X_train, X_test, self.y_train, self.y_test = train_test_split(X, y)
@@ -186,7 +209,8 @@ class StabilitasFinder(object):
 
     def fit(self):
         """
-        Preprocess date using TF-IDF Vecotrization.  Fit an SKLearn Random Forest classifier to the training data provided.
+        Preprocess date using TF-IDF Vecotrization.  Fit an SKLearn Random
+        Forest classifier to the training data provided.
 
         kwargs:
         mode - str, "evaluate", "train" or "predict", default: "evaluate"
@@ -209,17 +233,16 @@ class StabilitasFinder(object):
         Predict probability that a given report is critical, from MultinomialNB
         model.
         """
-        if X == None:
-            self.probas = [prob[1] for prob in
-                self.model.predict_proba(self.X_test)
+        if X is None:
+            self.probas = [
+                prob[1] for prob in self.model.predict_proba(self.X_test)
             ]
         else:
-            self.probas = [prob[1] for prob in
-                self.model.predict_proba(X)
-        ]
+            self.probas = [
+                prob[1] for prob in self.model.predict_proba(X)
+            ]
 
         return self.probas
-
 
     def predict(self, X=None, y=None, threshold=0.14):
         """
@@ -282,7 +305,8 @@ class StabilitasFinder(object):
                 n_jobs=-1
             )
         }
-        if thresholds == None:
+
+        if thresholds is None:
             if model_type == "gbc":
                 thresholds = [0.2164]
             elif model_type == "rfc":
@@ -296,7 +320,9 @@ class StabilitasFinder(object):
             X_test = vectorizer.transform(X_test)
             model = models[model_type]
             model.fit(X_train, y_train)
-            title_probas = [prob[1] for prob in model.predict_proba(X_test.toarray())]
+            title_probas = [
+                prob[1] for prob in model.predict_proba(X_test.toarray())
+            ]
 
             # Split, train, test on metadata
             X_train_meta, X_test_meta = X_meta[train_index], X_meta[test_index]
@@ -310,11 +336,16 @@ class StabilitasFinder(object):
                 max_features="sqrt"
             )
             model_meta.fit(X_train_meta, y_train_meta)
-            meta_probas = [prob[1] for prob in model_meta.predict_proba(X_test_meta)]
+            meta_probas = [
+                prob[1] for prob in model_meta.predict_proba(X_test_meta)
+            ]
             # cv_probas.extend(meta_probas)
 
             # Average title and double weight meta probas for final output
-            probas = [(title + 2*meta) / 3 for title, meta in izip(title_probas, meta_probas)]
+            probas = [
+                (title + 2*meta) / 3
+                for title, meta in izip(title_probas, meta_probas)
+            ]
             cv_probas.extend(probas)
 
         for threshold in thresholds:
@@ -345,7 +376,7 @@ class StabilitasFinder(object):
         ].to_csv("eda/critical_titles.csv", sep=",", mode="w")
 
     def _labeled_critical_cities_by_day(self):
-        if (self.date_lookup == None) | (self.city_lookup == None):
+        if (self.date_lookup is None) | (self.city_lookup is None):
             print "Needs lookup dicts from Filter Layer"
         else:
             print "Grouping labeled cities by day..."
@@ -369,7 +400,7 @@ class StabilitasFinder(object):
                         self.date_lookup[key][1].append(city)
 
     def _predicted_critical_cities_by_day(self):
-        if (self.date_lookup == None) | (self.city_lookup == None):
+        if (self.date_lookup is None) | (self.city_lookup is None):
             print "Needs lookup dicts from Filter Layer"
         else:
             print "Grouping predicted cities by day..."
@@ -391,13 +422,15 @@ class StabilitasFinder(object):
                         self.date_lookup[key][2].append(city)
 
     def _most_critical_report_per_city_per_day(self):
-        if (self.date_lookup == None) | (self.city_lookup == None):
+        if (self.date_lookup is None) | (self.city_lookup is None):
             print "Needs lookup dicts from Filter Layer"
         else:
             print "Extracting most critical reports..."
             for city in self.city_lookup.keys():
                 city_df = self.flagged_df[self.flagged_df["city"] == city]
-                city_df.loc[:,"date"] = city_df["start_ts"].apply(lambda x: x.date())
+                city_df.loc[:, "date"] = city_df["start_ts"].apply(
+                    lambda x: x.date()
+                )
                 days = set(city_df["date"])
 
                 for day in days:
@@ -409,4 +442,6 @@ class StabilitasFinder(object):
                     try:
                         self.city_lookup[city][key] = (proba, title)
                     except KeyError:
-                        self.city_lookup[city][key] = (0, "None predicted critical")
+                        self.city_lookup[city][key] = (
+                            0, "None predicted critical"
+                        )

@@ -13,7 +13,10 @@ import json
 
 def main():
     finder = StabilitasFinder()
-    finder.load_data(source="data/outputs_2016/volume_scoring_1wk_window/flagged_reports_vol_1w_full.csv")
+    finder.load_data(
+        source="""data/outputs_2016/volume_scoring_1wk_window/
+        flagged_reports_vol_1w_full.csv"""
+    )
     finder.trim_dates("2016-10-21", "2017-01-01")
     finder.label_critical_reports(cutoff=30)
     # X = finder.flagged_df["title"].values
@@ -75,7 +78,14 @@ def main():
     #     "vectorizer__max_features": [2500],
     #     "classifier__n_estimators": [100],
     #     "classifier__max_depth": [None],
-    #     "classifier__min_samples_split": [2000, 2100, 2200, 2300, 2400, 2500],
+    #     "classifier__min_samples_split": [
+    #         2000,
+    #         2100,
+    #         2200,
+    #         2300,
+    #         2400,
+    #         2500,
+    #     ],
     #     "classifier__min_samples_leaf": [1, 2, 3, 4, 5],
     #     "classifier__max_features": ["sqrt"],
     #     "classifier__n_jobs": [-1]
@@ -270,7 +280,6 @@ def main():
     #     'classifier__n_jobs': -1,
     # }
 
-
     # param_grid7 = {
     #     "vectorizer__analyzer": ["word"],
     #     "vectorizer__stop_words": ["english"],
@@ -315,7 +324,6 @@ def main():
     #     'classifier__max_features': '100',
     #     'classifier__n_jobs': -1,
     # }
-
 
     # param_grid8 = {
     #     "vectorizer__analyzer": ["word"],
@@ -362,7 +370,7 @@ def main():
     #     'classifier__n_jobs': -1,
     # }
 
-    ########### GRID SEARCH FOR METADATA MODEL ###############
+    # GRID SEARCH FOR METADATA MODEL #
     param_grid9 = {
         # "vectorizer__analyzer": ["word"],
         # "vectorizer__stop_words": ["english"],
@@ -370,8 +378,8 @@ def main():
         "classifier__n_estimators": [100],
         "classifier__max_depth": [None],
         "classifier__min_samples_split": [2, 4, 6, 10],
-        "classifier__min_samples_leaf": [1,],
-        "classifier__max_features": ["sqrt",],
+        "classifier__min_samples_leaf": [1],
+        "classifier__max_features": ["sqrt"],
         "classifier__n_jobs": [-1]
     }
     grid9 = GridSearchCV(
@@ -379,7 +387,7 @@ def main():
         cv=5,
         n_jobs=-1,
         param_grid=param_grid9,
-        scoring = "roc_auc",
+        scoring="roc_auc",
         refit=False
     )
 

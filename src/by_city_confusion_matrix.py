@@ -83,7 +83,7 @@ def main():
     # plt.show()
 
     ########################
-    ###  11 JUL RESULTS  ###
+    #    11 JUL RESULTS    #
     ########################
 
     # Confusion Matrix:
@@ -97,10 +97,9 @@ def main():
     # False Discovery Rate:  0.901528013582
     # F1 Score:  0.175115207373
 
-
     #################################
-    ###      12 JUL RESULTS       ###
-    ###  first with full dataset  ###
+    #        12 JUL RESULTS         #
+    #    first with full dataset    #
     #################################
     # Note: this model used VOLUME scoring only, not severity scoring
 
@@ -114,8 +113,6 @@ def main():
     # False Positive Rate:  0.0510292113118
     # False Discovery Rate:  0.937698161065
     # F1 Score:  0.11707414033
-
-
 
 if __name__ == '__main__':
     main()

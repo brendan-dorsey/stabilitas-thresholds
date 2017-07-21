@@ -18,16 +18,19 @@ def main():
     # window = "4wk"
     # model_type = "rfc"
 
-    with open("data/outputs_2016/volume_scoring_1wk_window/filter_vol_date_lookup_1wk.json") as f:
+    with open("""data/outputs_2016/volume_scoring_1wk_window/
+    filter_vol_date_lookup_1wk.json""") as f:
         date_lookup = json.load(f)
 
-    with open("data/outputs_2016/volume_scoring_1wk_window/filter_vol_city_lookup_1wk.json") as f:
+    with open("""data/outputs_2016/volume_scoring_1wk_window/
+    filter_vol_city_lookup_1wk.json""") as f:
         city_lookup = json.load(f)
 
     finder_start = time.time()
     finder_layer = StabilitasFinder()
     finder_layer.load_data(
-        source="data/outputs_2016/volume_scoring_1wk_window/filter_vol_flagged_reports_1wk.csv",
+        source="""data/outputs_2016/volume_scoring_1wk_window/
+        filter_vol_flagged_reports_1wk.csv""",
         date_lookup=date_lookup,
         city_lookup=city_lookup
     )
@@ -47,7 +50,8 @@ def main():
                                     finder_finish-finder_start
     )
 
-    with open("data/outputs_2016/volume_scoring_1wk_window/final_vol_date_lookup_1wk.json", mode="w") as f:
+    with open("""data/outputs_2016/volume_scoring_1wk_window/
+    final_vol_date_lookup_1wk.json""", mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
     city_lookup = finder_layer.city_lookup
@@ -61,7 +65,8 @@ def main():
                 except KeyError:
                     pass
 
-    with open("data/outputs_2016/volume_scoring_1wk_window/final_vol_city_lookup_1wk.json", mode="w") as f:
+    with open("""data/outputs_2016/volume_scoring_1wk_window/
+    final_vol_city_lookup_1wk.json""", mode="w") as f:
         json.dump(city_lookup, f)
 
     y_true = finder_layer.flagged_df["critical"].values
@@ -101,12 +106,11 @@ def main():
     print "False Discovery Rate: ", fdr
     print "F1 Score: ", f1
 
-
     ########################################
     ########################################
-    ##                                    ##
-    ##  Code for by city by day metrics   ##
-    ##                                    ##
+    #                                      #
+    #   Code for by city by day metrics    #
+    #                                      #
     ########################################
     ########################################
 
@@ -176,17 +180,13 @@ def main():
     print "False Discovery Rate: ", fdr
     print "F1 Score: ", f1
 
-
-
-
-
     ########################################
     ########################################
-    ##                                    ##
-    ##  The code below is oudated for     ##
-    ##  a ROC curve and determining an    ##
-    ##  optimal decision threshold.       ##
-    ##                                    ##
+    #                                      #
+    #   The code below is oudated for      #
+    #   a ROC curve and determining an     #
+    #   optimal decision threshold.        #
+    #                                      #
     ########################################
     ########################################
 
@@ -245,9 +245,6 @@ def main():
     # ax.set_title("ROC Curve for First Model")
     # plt.legend(loc="lower right")
     # plt.show()
-
-
-
 
 
 if __name__ == '__main__':

@@ -33,9 +33,9 @@ def main():
         save_labels=False,
     )
 
-    # filter_layer.reports_df = pd.read_csv("data/2016_flagged_reports_quad_1std_1wk.csv")
-
-
+    # filter_layer.reports_df = pd.read_csv(
+    #     "data/2016_flagged_reports_quad_1std_1wk.csv"
+    # )
 
     anomalies_df = filter_layer.get_anomaly_reports(
         write_to_file=False,
@@ -67,7 +67,6 @@ def main():
     # with open("data/2016_quad_4w_city_lookup.json", mode="w") as f:
     #     json.dump(truncated_city_lookup, f)
 
-
     # _load_cities
     # _build_cities_timeseries(quadratic=True)
     # _find_anomalies
@@ -75,11 +74,15 @@ def main():
 
     # cities_filename = "data/cities300000.csv"
     # filter_layer = StabilitasFilter(cities_filename, cleaned=True)
-    # filter_layer._load_data("data/reports_12DEC16-26DEC16.tsv", precalculated=False, save_labels=False)
-    # filter_layer.reports_df = pd.read_csv("data/2016_flagged_reports_quad_1std_1wk.csv")
+    # filter_layer._load_data(
+    #     "data/reports_12DEC16-26DEC16.tsv",
+    #     precalculated=False,
+    #     save_labels=False,
+    # )
+    # filter_layer.reports_df = pd.read_csv(
+    #     "data/2016_flagged_reports_quad_1std_1wk.csv"
+    # )
     # filter_layer._build_cities_timeseries(quadratic=True)
-
-
 
 
 if __name__ == '__main__':

@@ -10,7 +10,6 @@ from sklearn.metrics import roc_auc_score, confusion_matrix, roc_curve
 from itertools import combinations, product
 
 
-
 def main():
     """
     Main function to run both layers of Stabilitas Thresholds app.
@@ -37,11 +36,11 @@ def main():
         save_labels=False,
     )
 
-
     anomalies_df = filter_layer.get_anomaly_reports(
         write_to_file=True,
-        filename="data/outputs_2016/flagged_reports_vol_{}_full.csv".format(window_size)
-        )
+        filename="data/outputs_2016/flagged_reports_vol_{}_full.csv".format(
+            window_size
+        ))
     date_lookup = filter_layer.date_lookup
     city_lookup = filter_layer.city_lookup
 
@@ -54,10 +53,12 @@ def main():
                 except KeyError:
                     pass
 
-    with open("data/outputs_2016/filter_full_vol_date_lookup_{}.json".format(window_size), mode="w") as f:
+    with open("""data/outputs_2016/
+    filter_full_vol_date_lookup_{}.json""".format(window_size), mode="w") as f:
         json.dump(date_lookup, f)
 
-    with open("data/outputs_2016/filter_full_vol_city_lookup_{}.json".format(window_size), mode="w") as f:
+    with open("""data/outputs_2016/
+    filter_full_vol_city_lookup_{}.json""".format(window_size), mode="w") as f:
         json.dump(city_lookup, f)
 
     filter_finish = time.time()
@@ -94,7 +95,8 @@ def main():
                                     finder_finish-filter_start
     )
 
-    with open("data/outputs_2016/full_final_vol_date_lookup_{}.json".format(window_size), mode="w") as f:
+    with open("""data/outputs_2016/
+    full_final_vol_date_lookup_{}.json""".format(window_size), mode="w") as f:
         json.dump(finder_layer.date_lookup, f)
 
     city_lookup = finder_layer.city_lookup
@@ -108,7 +110,8 @@ def main():
                 except KeyError:
                     pass
 
-    with open("data/outputs_2016/full_final_vol_city_lookup_{}.json".format(window_size), mode="w") as f:
+    with open("""data/outputs_2016/
+    full_final_vol_city_lookup_{}.json""".format(window_size), mode="w") as f:
         json.dump(city_lookup, f)
 
     y_true = finder_layer.flagged_df["critical"].values
@@ -151,9 +154,9 @@ def main():
 
     ########################################
     ########################################
-    ##                                    ##
-    ##  Code for by city by day metrics   ##
-    ##                                    ##
+    #                                      #
+    #   Code for by city by day metrics    #
+    #                                      #
     ########################################
     ########################################
 
@@ -223,13 +226,12 @@ def main():
     print "False Discovery Rate: ", fdr
     print "F1 Score: ", f1
 
-
     ########################################
     ########################################
-    ##                                    ##
-    ##  This code will take lat/longs and ##
-    ##   plot them as if on a map         ##
-    ##                                    ##
+    #                                      #
+    #   This code will take lat/longs and  #
+    #    plot them as if on a map          #
+    #                                      #
     ########################################
     ########################################
 

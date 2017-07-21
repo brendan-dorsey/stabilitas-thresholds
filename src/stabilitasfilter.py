@@ -10,7 +10,6 @@ from functools import partial
 import random
 
 
-
 class StabilitasFilter(object):
     def __init__(self, cities_filename, cleaned=True):
         """
@@ -21,8 +20,9 @@ class StabilitasFilter(object):
         fit - load and process data, identify anomalies, build reference
             dictionaries
         get_anomaly_reports - returns dataframe of anomalous reports to pass to
-            StabilitasFinder model. Will write the results to a csv file in data
-            directory by default (disable by calling with False as argument)
+            StabilitasFinder model. Will write the results to a csv file in
+            data directory by default (disable by calling with False as
+            argument)
         get_anomaly_locations - returns tuple of lists of latitudes and
             longitudes of cities with anomalies detected on the passed in
             date -> ([lats], [longs])
@@ -153,12 +153,23 @@ class StabilitasFilter(object):
         self.end = pd.to_datetime(end_datetime)
         self.date_range = pd.date_range(self.start, self.end)
 
-        self._load_data(data_filename, load_city_labels, city_labels_path, save_labels)
+        self._load_data(
+            data_filename,
+            load_city_labels,
+            city_labels_path,
+            save_labels,
+        )
         self._build_cities_timeseries(quadratic)
         self._find_anomalies()
         self._anomalies_by_day()
 
-    def _load_data(self, data_filename, load_city_labels, city_labels_path, save_labels):
+    def _load_data(
+        self,
+        data_filename,
+        load_city_labels,
+        city_labels_path,
+        save_labels,
+    ):
         """
         Load data from the given file.
 
@@ -190,7 +201,11 @@ class StabilitasFilter(object):
             names=column_names
         )
         self._preprocess_data()
-        self._map_reports_to_cities(load_city_labels, city_labels_path, save_labels)
+        self._map_reports_to_cities(
+            load_city_labels,
+            city_labels_path,
+            save_labels,
+        )
         self._build_multiindex()
         finish = time.time()
         print "{0} reports loaded in {1} seconds.".format(
@@ -207,7 +222,6 @@ class StabilitasFilter(object):
         """
         print "        Processing data..."
         start = time.time()
-
 
         target_columns = [
             "lat",
@@ -243,14 +257,19 @@ class StabilitasFilter(object):
         finish = time.time()
         print "        Reports processed in {0} seconds".format(finish-start)
 
-    def _map_reports_to_cities(self, load_city_labels=False, city_labels_path=None, save_labels=False):
+    def _map_reports_to_cities(
+        self,
+        load_city_labels=False,
+        city_labels_path=None,
+        save_labels=False
+    ):
         """
         Method that calculates the haversine distance from each report to each
         city, identifies the city closest to each report, and labels each
         report with its closest city.
 
-        Inputs: load_city_labels - bool, indicates whether to use load_city_labels
-        values.
+        Inputs: load_city_labels - bool, indicates whether to use
+            load_city_labels values.
         Output: self with labeled reports dataframe
         """
         print "        Labeling reports with cities..."
@@ -269,7 +288,7 @@ class StabilitasFilter(object):
                 if i % 1000 == 0:
                     current_time = time.time() - start
                     total_time = (current_time * total_reports) / (i+1)
-                    print "     Estimated {0} seconds remaining for {1} reports".format(
+                    print "     ~{0} seconds remaining for {1} reports".format(
                         int(round(total_time - current_time)),
                         total_reports - i
                     )
@@ -317,7 +336,10 @@ class StabilitasFilter(object):
             self.reports_df["city"].values,
             range(len(self.reports_df))
         ]
-        multi_index = pd.MultiIndex.from_arrays(arrays, names=["time", "city", "row"])
+        multi_index = pd.MultiIndex.from_arrays(
+            arrays,
+            names=["time", "city", "row"]
+        )
 
         self.reports_df = pd.DataFrame(
             self.reports_df.values,
@@ -329,7 +351,6 @@ class StabilitasFilter(object):
             pd.to_datetime(self.reports_df["start_ts"])
         self.reports_df["severity_quadratic"] =\
             self.reports_df["severity_quadratic"].apply(float)
-
 
     def _build_cities_timeseries(self, quadratic):
         """
@@ -351,13 +372,8 @@ class StabilitasFilter(object):
                     index=city_df["start_ts"]
                 )
                 self.city_lookup[city]["timeseries"] = np.log(
-                    ts.resample("{}T".format(self.resample_size)
-                    ).sum())
-
-                # Try with mean instead of sum
-                # self.city_lookup[city]["timeseries"] = np.log(
-                #     ts.resample("{}T".format(self.resample_size)).mean()
-                # )
+                    ts.resample("{}T".format(self.resample_size)).sum()
+                )
 
             else:
                 # Use only volume of reporting
@@ -385,7 +401,7 @@ class StabilitasFilter(object):
             if i % 10 == 0:
                 current_time = time.time() - start
                 total_time = (current_time * total_cities) / (i+1)
-                print "     Estimated {0} seconds remaining for {1} cities".format(
+                print "     ~{0} seconds remaining for {1} cities".format(
                     int(round(total_time - current_time)),
                     total_cities - i
                 )
@@ -407,12 +423,16 @@ class StabilitasFilter(object):
 
             anomalies = []
             self.city_lookup[city]["anomaly_indices"] = []
-            for sample, threshold, location in izip(series, threshold, locations):
+            for sample, threshold, location in izip(
+                series, threshold, locations
+            ):
                 if sample > threshold:
                     anomalies.append(sample)
                     window_start = (series.index[location] - self.time_delta)
                     window_stop = series.index[location]
-                    self.city_lookup[city]["anomaly_indices"].append((window_start, window_stop))
+                    self.city_lookup[city]["anomaly_indices"].append(
+                        (window_start, window_stop)
+                    )
                     # self.reports_df.loc[
                     #     idx[window_start:window_stop, city, :],
                     #     idx["anomalous"]
@@ -493,7 +513,7 @@ class StabilitasFilter(object):
             if i % 10 == 0:
                 current_time = time.time() - start
                 total_time = (current_time * total_cities) / (i+1)
-                print "     Estimated {0} seconds remaining for {1} cities".format(
+                print "     ~{0} seconds remaining for {1} cities".format(
                     int(round(total_time - current_time)),
                     total_cities - i
                 )
@@ -508,7 +528,7 @@ class StabilitasFilter(object):
             except KeyError:
                 pass
 
-        ### Multiprocessing attempt ####
+        # Multiprocessing attempt #
         # cities = self.reports_df["city"].unique()
         # self.reports_df = pooled_labeling(
         #     idx,
@@ -517,8 +537,6 @@ class StabilitasFilter(object):
         #     self.reports_df,
         #     cities
         # )
-
-
 
         anomalies_df = self.reports_df[self.reports_df["anomalous"] == 1]
         if write_to_file:
@@ -547,6 +565,7 @@ def severity_score_quadratic(severity_rating):
     else:
         return 4
 
+
 def label_anomalous_reports(
     idx,
     time_delta,
@@ -568,6 +587,7 @@ def label_anomalous_reports(
         pass
     print "Worker finished in {} seconds.".format(time.time() - start)
     return dataframe.loc[idx[:, city, :], idx[:]]
+
 
 def pooled_labeling(
     idx,

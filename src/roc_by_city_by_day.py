@@ -12,28 +12,30 @@ plt.style.use("ggplot")
 
 def main():
 
-    with open("data/outputs_2016/volume_scoring_1wk_window/filter_vol_date_lookup_1w.json", "r") as f:
+    with open("""data/outputs_2016/volume_scoring_1wk_window/
+    filter_vol_date_lookup_1w.json""", "r") as f:
         date_lookup = json.load(f)
 
-    with open("data/outputs_2016/volume_scoring_1wk_window/filter_vol_city_lookup_1w.json", "r") as f:
+    with open("""data/outputs_2016/volume_scoring_1wk_window/
+    filter_vol_city_lookup_1w.json""", "r") as f:
         city_lookup = json.load(f)
 
     ########################################
     ########################################
-    ##                                    ##
-    ##  The code below is for generating  ##
-    ##  a ROC curve and determining an    ##
-    ##  optimal decision threshold        ##
-    ##                                    ##
+    #                                      #
+    #   The code below is for generating   #
+    #   a ROC curve and determining an     #
+    #   optimal decision threshold         #
+    #                                      #
     ########################################
     ########################################
 
-    fig, ax = plt.subplots(1, figsize=(8,8))
-
+    fig, ax = plt.subplots(1, figsize=(8, 8))
 
     finder = StabilitasFinder()
     finder.load_data(
-        source="data/outputs_2016/volume_scoring_1wk_window/flagged_reports_vol_1w_full.csv",
+        source="""data/outputs_2016/volume_scoring_1wk_window/
+            flagged_reports_vol_1w_full.csv""",
         date_lookup=date_lookup,
         city_lookup=city_lookup
     )
@@ -117,7 +119,8 @@ def main():
 
         # Precision: TP / TP + FP
         try:
-            precision = float(conf_mat[0][0]) / (conf_mat[0][0] + conf_mat[1][0])
+            precision = (float(conf_mat[0][0]) /
+                         (conf_mat[0][0] + conf_mat[1][0]))
         except:
             precision = 0
 
@@ -151,7 +154,6 @@ def main():
             print "F1 score: ", f1
             print ""
 
-
     area = auc(false_positive_rates, true_positive_rates)
 
     ax.plot(
@@ -167,9 +169,19 @@ def main():
         linestyle=":",
         )
 
-
-    ax.plot([0,1], [0, 1], linestyle="--", color="k")
-    ax.plot([0,1], [0.95, 0.95], linestyle=":", color="g", label="Target Recall per City per Day")
+    ax.plot(
+        [0, 1],
+        [0, 1],
+        linestyle="--",
+        color="k",
+    )
+    ax.plot(
+        [0, 1],
+        [0.95, 0.95],
+        linestyle=":",
+        color="g",
+        label="Target Recall per City per Day",
+    )
 
     ax.set_xlabel("False Positive Rate")
     ax.set_ylabel("True Positive Rate")
@@ -178,7 +190,6 @@ def main():
     ax.set_title("Per City Per Day ROC Curve")
     plt.legend(loc="lower right")
     plt.show()
-
 
 
 if __name__ == '__main__':
