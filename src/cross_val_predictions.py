@@ -10,16 +10,34 @@ plt.style.use("ggplot")
 
 
 def main():
+    """
+    Main function to run script.
+    """
+    cross_validate(
+        date_lookup="""data/outputs_2016/volume_scoring_1wk_window/
+        filter_vol_date_lookup_1wk.json"""
+        city_lookup="""data/outputs_2016/volume_scoring_1wk_window/
+        filter_vol_city_lookup_1wk.json"""
+        data_source="""data/outputs_2016/volume_scoring_1wk_window/
+        filter_vol_flagged_reports_1wk.csv"""
+    )
 
-    with open("""data/outputs_2016/volume_scoring_1wk_window/
-    filter_vol_date_lookup_1w.json
-    """, "r") as f:
+
+def cross_validate(date_lookup, city_lookup, data_source):
+    """
+    Generate cross validated predictions and ROC curves. Takes filepaths for
+    outputs from filter layer as arguments.
+
+    Inputs:
+    date_lookup - str, filepath to date lookup output from filter layer.
+    city_lookup - str, filepath to city lookup output from filter layer.
+    data_source - str, filepath to flagged reports output from filter layer.
+    """
+
+    with open(date_lookup, "r") as f:
         date_lookup = json.load(f)
 
-    with open("""
-    data/outputs_2016/volume_scoring_1wk_window/
-    filter_vol_city_lookup_1w.json
-    """, "r") as f:
+    with open(city_lookup, "r") as f:
         city_lookup = json.load(f)
 
     ########################################
@@ -46,10 +64,9 @@ def main():
     for start_date, end_date in cutoffs:
         finder = StabilitasFinder()
         finder.load_data(
-            source="""data/outputs_2016/volume_scoring_1wk_window/
-            flagged_reports_vol_1w_full.csv""",
+            source=data_source,
             date_lookup=date_lookup,
-            city_lookup=city_lookup
+            city_lookup=city_lookup,
         )
         finder.trim_dates(start_date, end_date)
         finder.label_critical_reports()

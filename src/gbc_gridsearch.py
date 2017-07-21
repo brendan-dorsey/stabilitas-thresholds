@@ -14,6 +14,11 @@ plt.style.use("ggplot")
 
 
 class VectorsToDense(object):
+    """
+    Class to help pass outputs from TF-IDF Vectorizer to Random Forest
+    Classifier. Converts sparse matrix to dense in a way that fits with
+    SKLearn pipeline.
+    """
     def __init__(self):
         pass
 
@@ -31,6 +36,10 @@ class VectorsToDense(object):
 
 
 def main():
+    """
+    Main function to run grid search for hyperparameters. Prior results are
+    saved as comments.
+    """
     finder = StabilitasFinder()
     finder.load_data(source="data/flagged_reports.csv",)
     finder.label_critical_reports(cutoff=30)

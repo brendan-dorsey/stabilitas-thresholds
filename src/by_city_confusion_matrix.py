@@ -8,7 +8,25 @@ plt.style.use("ggplot")
 
 
 def main():
-    with open("debug/debug_full_finder_date_lookup_4wk.json", "r") as f:
+    """
+    Main function to run script.
+    """
+
+    filename = "app/date_lookup.json"
+    by_city_confusion_matrix(filename)
+
+
+def by_city_confusion_matrix(filename):
+    """
+    Function to generate a confusion matrix and several performance
+    metrics on a per-city/per-day basis. Input is file path for the date
+    lookup dictionary from the final output of the model. Output is printed to
+    the command line.
+
+    Inputs:
+    filename = str, project path to target final date lookup dictionary.
+    """
+    with open(filename, "r") as f:
         date_lookup = json.load(f)
 
     dates = date_lookup.keys()

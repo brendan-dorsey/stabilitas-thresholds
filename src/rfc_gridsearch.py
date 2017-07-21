@@ -12,6 +12,9 @@ import json
 
 
 def main():
+    """
+    Main function to run grid search. Results stored as comments.
+    """
     finder = StabilitasFinder()
     finder.load_data(
         source="""data/outputs_2016/volume_scoring_1wk_window/
