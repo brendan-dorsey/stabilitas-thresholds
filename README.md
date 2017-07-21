@@ -112,7 +112,7 @@ correlate to an anomaly burst in the next 24 hours.**
 Data processing was perfomed in Python using pandas, NumPy, and Sci-Kit Learn. Data 
 visualizations were made through matplotlib. Processing, modelling, and 
 cross-validated grid searches were performed on an AWS EC2 instance. The web 
-application is flask based, using Python, JSON objects, and JavaScript to build an 
+application is Flask based, using Python, JSON objects, and JavaScript to build an 
 interactive bootstrap-based dashboard. The web app is hosted on its own AWS EC2 
 webserver.
 
@@ -129,8 +129,8 @@ that issue is resolved.
 
 ![Data Performance Challenge](images/data_performance_challenge.png)
 
-Possible causes are seasonality, inconsistent patterns within the data, increase 
-noise in some months (making an already heavily unbalanced classes much more 
+Possible causes are seasonality, inconsistent patterns within the data, or increased 
+noise in some months (making already heavily unbalanced classes even more 
 extreme). There may have also been a distinct change in the data processing pipeline
 at Stabilitas. Each of these possibilities will require a different technique to 
-address, so more investigation is the first step.
+address, so more investigation is the first next step.
