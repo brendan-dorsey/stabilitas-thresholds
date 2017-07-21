@@ -32,11 +32,11 @@ feature from the data that quantifies the risk in each of those regions at any g
 time.
 
 #### Defining Regions
-I started with  Kmeans clustering from SKLearn to determine an optimal number of 
+I started with  kMeans clustering from SKLearn to determine an optimal number of 
 regions to use given the data I had. I used silhouette scores to determine that ~1000-
 1500 clusters was ideal. I used cities data from 
 [GeoNames](http://http://download.geonames.org/export/dump/) and determined that 
-there are 1375 cities with population 300,000 or greater. 
+there are 1375 cities globally with population 300,000 or greater. 
 
 ![kMeans Clustering](images/KMeans_chart.png)
 
@@ -63,6 +63,9 @@ performance, but still narrowly underperformed compared to volume-based scoring.
 **Risk is quantified as the total number of reports mapped to a given city, 
 calculated in 3 minute increments.**
 ![Berlin Data](images/berlin_data.png)
+
+**Alternate Risk Score Formula**
+![Risk Score](images/risk_feature.png)
 
 
 ### Labeling Data
