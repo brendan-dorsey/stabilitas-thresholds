@@ -11,6 +11,24 @@ import random
 
 
 class StabilitasFilter(object):
+    """
+    Object to label data from Stabilitas to prep for use in classification
+    system to predict the probability a given report will correlate to a burst
+    of reports in the next 24 hours (with the idea that these types of bursts
+    are caused by major events).
+
+    OUTSTANDING ISSUES:
+    1. Significant labeling functions are still handled by the classification
+    system object. Those functions need to be migrated to this object.
+
+    2. There is no way to do live batch-processing yet.
+
+    3. Documentation of code is still hit-or-miss.
+
+    4. Parallel processing could be implemented for labeling data, especially
+    in calculating haversine distances from each report to each city and in
+    flagging anomalous reports. This may yield significant performance benefits.
+    """
     def __init__(self, cities_filename, cleaned=True):
         """
         Instantiate a StabilitasFilter object with cities specified in

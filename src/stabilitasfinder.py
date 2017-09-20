@@ -55,6 +55,8 @@ class StabilitasFinder(object):
         Method to load data into Finder Layer. Data must be passed from
         StabilitasFilter as either a filepath or pandas DataFrame. Lookups
         are dictionaries to be passed in from Finder Layer
+
+        *** NEED TO REFACTOR ONCE LABELING FUNCTIONS ARE MIGRATED ***
         """
         start = time.time()
         print "Loading data for Finder..."
@@ -87,7 +89,10 @@ class StabilitasFinder(object):
         )
 
         # Dummies for city
-        city_dum = pd.get_dummies(self.flagged_df["city"], drop_first=True)
+        city_dum = pd.get_dummies(
+            self.flagged_df["city"],
+            drop_first=True
+        )
         self.dummies = pd.merge(
             self.dummies,
             city_dum,
@@ -114,6 +119,8 @@ class StabilitasFinder(object):
         Method to trim reports between [start, stop) datetimes.
         Can accept any format that can be read by pandas into
         datetime format.
+
+        *** MAY NEED TO MOVE TO StabilitasFilter ***
         """
         start_date = pd.to_datetime(start_date)
         self.flagged_df = self.flagged_df[
@@ -141,7 +148,6 @@ class StabilitasFinder(object):
         print "Labeling critical reports..."
         self.flagged_df["critical"] = np.zeros(len(self.flagged_df))
         next_day = pd.Timedelta(days=1)
-        # titles = []
 
         total_cities = len(self.flagged_df["city"].unique())
         for i, city in enumerate(self.flagged_df["city"].unique()):
@@ -157,7 +163,6 @@ class StabilitasFinder(object):
             city_df = city_df.set_index("start_ts")
 
             for row in city_df.iterrows():
-                # titles.append(row[1][3])
                 index = row[1][-2]
 
                 report_time = row[0]
@@ -190,6 +195,8 @@ class StabilitasFinder(object):
             Use "evaluate" for a train/test split when evalutating the model
             Use "train" to train the model on a complete dataset
             Use "predict" to use the model on a live dataset
+
+        *** NEED TO REFACTOR FOR BATCH PROCESSING FUNCTIONALITY ***
         """
         print "Preprocessing data..."
         X = self.flagged_df["title"]
